@@ -1,0 +1,4 @@
+FROM node:22.2.0-bullseye-slim
+COPY AquaNet /AquaNet
+WORKDIR /AquaNet
+RUN yarn install

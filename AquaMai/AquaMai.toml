@@ -1,0 +1,41 @@
+
+# ===================================
+# Cheat: You control the buttons you press
+[Cheat]
+# Unlock normally event-only tickets
+TicketUnlock=true
+# Unlock maps that are not in this version
+MapUnlock=true
+
+# ===================================
+# UX: User Experience Improvements
+[UX]
+# Skip the warning screen and logo shown after the POST sequence
+SkipWarningScreen=true
+# Single player: Show 1P only, at the center of the screen
+SinglePlayer=true
+# !!EXPERIMENTAL!! Skip from the card-scanning screen directly to music selection screen
+SkipToMusicSelection=false
+# Set the version string displayed at the top-right corner of the screen
+CustomVersionString=""
+# Load Jacket image from folder "LocalAssets" and filename "{MusicID}.png" for self-made charts
+LoadJacketPng=true
+# Press key "7" for 1 second to skip to next step or restart current song
+QuickSkip=true
+# Add ".ab" image resources without the need of rebuilding a manifest
+LoadAssetBundleWithoutManifest=true
+# Skip "New Event" and "Information" text boxes for new users
+SkipEventInfo=true
+# Random BGM, put Mai2Cue.{acb,awb} of old version of the game in `LocalAssets\Mai2Cue` and rename them
+RandomBgm=false
+# Play "Master" difficulty on Demo screen
+DemoMaster=true
+# Execute some command on game idle or on game start
+ExecOnIdle=""
+ExecOnEntry=""
+# Change every timer to 200 seconds
+ExtendTimer=true
+
+[Performance]
+# Disable some useless delays to speed up the game boot process
+ImproveLoadSpeed=false
