@@ -18,7 +18,7 @@ services:
     volumes:
       - ./config:/app/config
       - ./data:/app/data
-
+      - ./web:/app/web
   db:
     image: mariadb:latest
     container_name: aquadx_mariadb
@@ -42,3 +42,13 @@ services:
       - "5173:5173"
     working_dir: "/AquaNet"
     command: "yarn dev --host"
+  datahost:
+    build:
+      context: .
+      dockerfile: datahostDockerfile
+    container_name: aquadx_data_host
+    ports:
+      - 81:80
+    volumes:
+      - ./web:/var/www/html
+      - ./sites-enabled/:/etc/apache2/sites-enabled

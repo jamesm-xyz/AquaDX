@@ -1,6 +1,6 @@
 
 export const AQUA_HOST = 'http://192.168.1.2'
-export const DATA_HOST = 'https://aquadx.net'
+export const DATA_HOST = 'http://192.168.1.2:81'
 
 // This will be displayed for users to connect from the client
 export const AQUA_CONNECTION = '192.168.1.2'

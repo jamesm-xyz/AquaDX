@@ -1,0 +1,2 @@
+From php:apache
+RUN a2enmod headers
