@@ -45,7 +45,7 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
             rankingCache = time to us.em.createNativeQuery(
                 """
                 SELECT
-                    u.id,
+                    c.id,
                     u.user_name,
                     u.player_rating,
                     u.last_play_date,
@@ -55,9 +55,9 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
                     c.ranking_banned or a.opt_out_of_leaderboard AS hide,
                     a.username
                 FROM ${tableName}_user_playlog_view p
-                         JOIN ${tableName}_user_data_view u ON p.user_id = u.id
-                         JOIN sega_card c ON u.aime_card_id = c.id
-                         LEFT JOIN aqua_net_user a ON c.net_user_id = a.au_id
+                     JOIN ${tableName}_user_data_view u ON p.user_id = u.id
+                     JOIN sega_card c ON u.aime_card_id = c.id
+                     LEFT JOIN aqua_net_user a ON c.net_user_id = a.au_id
                 GROUP BY p.user_id, u.player_rating
                 ORDER BY u.player_rating DESC;
             """
