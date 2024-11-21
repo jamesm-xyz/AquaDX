@@ -57,7 +57,7 @@ annotation class SettingField(
 fun <T : Any> KClass<T>.vars() = memberProperties.mapNotNull { it as? Var<T, Any> }
 fun <T : Any> KClass<T>.varsMap() = vars().associateBy { it.name }
 fun <T : Any> KClass<T>.getters() = java.methods.filter { it.name.startsWith("get") }
-fun <T : Any> KClass<T>.gettersMap() = getters().associateBy { it.name.removePrefix("get").decapitalize() }
+fun <T : Any> KClass<T>.gettersMap() = getters().associateBy { it.name.removePrefix("get").firstCharLower() }
 infix fun KCallable<*>.returns(type: KClass<*>) = returnType.jvmErasure.isSubclassOf(type)
 @Suppress("UNCHECKED_CAST")
 fun <C, T: Any> Var<C, T>.setCast(obj: C, value: String) = set(obj, when (returnType.classifier) {
@@ -130,6 +130,7 @@ val Date.sec get() = time / 1000
 // Encodings
 fun Long.toHex(len: Int = 16): Str = "0x${this.toString(len).padStart(len, '0').uppercase()}"
 fun Map<String, Any>.toUrl() = entries.joinToString("&") { (k, v) -> "$k=$v" }
+fun String.firstCharLower() = replaceFirstChar { it.lowercase() }
 
 fun Any.long() = when (this) {
     is Boolean -> if (this) 1L else 0
