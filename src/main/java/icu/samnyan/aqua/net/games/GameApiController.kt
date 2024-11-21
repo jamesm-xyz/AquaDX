@@ -83,9 +83,9 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
 
         // Read from cache if we just computed it less than duration ago
         // Shadow-ban: Do not show banned cards in the ranking except for the user who owns the card
-        return rankingCache.r.filter { !it.l || it.r.username == reqUser?.username }.map { it.r }.also {
-            logger.info("Ranking computed in ${millis() - time}ms")
-        }
+        return rankingCache.r.filter { !it.l || it.r.username == reqUser?.username }
+            .mapIndexed { i, it -> it.r.apply { rank = i + 1 } }
+            .also { logger.info("Ranking computed in ${millis() - time}ms") }
     }
 
     @API("playlog")
