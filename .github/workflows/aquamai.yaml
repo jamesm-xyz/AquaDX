@@ -27,7 +27,7 @@ jobs:
       - name: Checkout Assets
         uses: clansty/checkout@main
         with:
-          repository: clansty/AquaMai-Build-Assets
+          repository: MewoLab/AquaMai-Build-Assets
           ssh-key: ${{ secrets.BUILD_ASSETS_KEY }}
           path: build-assets
           max-attempts: 50
