@@ -6,7 +6,7 @@ This is an attempt to rebuild the [original Aqua server](https://dev.s-ul.net/Ne
 
 ## Related Projects
 
-* [AquaMai](./AquaMai): A maimai DX mod that adds many features to the game.
+* [AquaMai](https://github.com/MewoLab/AquaMai): A maimai DX mod that adds many features to the game.
 * [AquaNet](./AquaNet): A new web frontend for the modern age.
 
 ### Supported Games
