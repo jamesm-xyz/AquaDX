@@ -46,6 +46,10 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
 
+    // Metrics
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+
     // Database
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.3.3")
     runtimeOnly("org.xerial:sqlite-jdbc:3.45.2.0")
