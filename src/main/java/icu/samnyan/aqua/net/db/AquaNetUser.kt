@@ -6,6 +6,7 @@ import icu.samnyan.aqua.net.components.JWT
 import icu.samnyan.aqua.sega.allnet.AllNetProps
 import icu.samnyan.aqua.sega.allnet.KeyChipRepo
 import icu.samnyan.aqua.sega.allnet.KeychipSession
+import icu.samnyan.aqua.sega.allnet.TokenChecker
 import icu.samnyan.aqua.sega.general.dao.CardRepository
 import icu.samnyan.aqua.sega.general.model.Card
 import jakarta.persistence.*

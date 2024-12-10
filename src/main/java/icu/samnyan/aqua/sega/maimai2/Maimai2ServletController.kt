@@ -2,15 +2,21 @@ package icu.samnyan.aqua.sega.maimai2
 
 import ext.*
 import icu.samnyan.aqua.net.utils.ApiException
+import icu.samnyan.aqua.sega.allnet.KeychipSession
 import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.maimai2.handler.*
 import icu.samnyan.aqua.sega.maimai2.model.Mai2Repos
 import io.ktor.client.request.*
+import io.micrometer.core.instrument.Timer
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.time.TimeSource
+import kotlin.time.toJavaDuration
 
 /**
  * @author samnyan (privateamusement@protonmail.com)
@@ -39,6 +45,12 @@ class Maimai2ServletController(
         private val GAME_SETTING_DATE_FMT = DateTimeFormatter.ofPattern("2010-01-01 HH:mm:00.0")
         private val GAME_SETTING_TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:00")
     }
+
+    data class ApiLabel(val api: String)
+    data class ApiErrorLabel(val api: String, val error: String)
+    val apiCountMetric = Metrics.counter<ApiLabel>("aquadx_maimai2_api_count")
+    val apiErrorCountMetric = Metrics.counter<ApiErrorLabel>("aquadx_maimai2_api_error_count")
+    val apiLatencyMetric = Metrics.timer<ApiLabel>("aquadx_maimai2_api_latency")
 
     val getUserExtend = UserReqHandler { _, userId -> mapOf(
         "userId" to userId,
@@ -339,7 +351,10 @@ class Maimai2ServletController(
 
     @API("/{api}")
     fun handle(@PathVariable api: String, @RequestBody request: Map<String, Any>): Any {
+        val startTime = TimeSource.Monotonic.markNow()
+        var timer: Timer? = null
         try {
+            apiCountMetric(ApiLabel(api)).increment()
             logger.info("Mai2 < $api : ${request.toJson()}") // TODO: Optimize logging
 
             if (api in noopEndpoint) {
@@ -352,6 +367,7 @@ class Maimai2ServletController(
                 return staticEndpoint[api]!!
             }
 
+            timer = apiLatencyMetric(ApiLabel(api))
             return handlers[api]?.handle(request)?.let { if (it is String) it else it.toJson() }?.also {
                 if (api !in setOf("GetUserItemApi", "GetGameEventApi"))
                     logger.info("Mai2 > $api : $it")
@@ -359,9 +375,17 @@ class Maimai2ServletController(
                 logger.warn("Mai2 > $api not found")
                 """{"returnCode":1,"apiName":"com.sega.maimai2servlet.api.$api"}"""
             }
-        } catch (e: ApiException) {
-            // It's a bad practice to return 200 ok on error, but this is what maimai does so we have to follow
-            return ResponseEntity.ok().body("""{"returnCode":0,"apiName":"com.sega.maimai2servlet.api.$api","message":"${e.message?.replace("\"", "\\\"")} - ${e.code}"}""")
+        } catch (e: Exception) {
+            if (e is ApiException) {
+                apiErrorCountMetric(ApiErrorLabel(api, e.code.toString())).increment()
+                // It's a bad practice to return 200 ok on error, but this is what maimai does so we have to follow
+                return ResponseEntity.ok().body("""{"returnCode":0,"apiName":"com.sega.maimai2servlet.api.$api","message":"${e.message?.replace("\"", "\\\"")} - ${e.code}"}""")
+            } else {
+                apiErrorCountMetric(ApiErrorLabel(api, e.javaClass.name)).increment()
+                throw e;
+            }
+        } finally {
+            timer?.record(startTime.elapsedNow().toJavaDuration())
         }
     }
 }

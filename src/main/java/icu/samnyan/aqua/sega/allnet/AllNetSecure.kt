@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Configuration
@@ -30,6 +31,13 @@ class TokenChecker(
 ) : HandlerInterceptor {
     val log = LoggerFactory.getLogger(TokenChecker::class.java)
 
+    companion object {
+        private val log = LoggerFactory.getLogger(TokenChecker::class.java)
+
+        private val currentSession = ThreadLocal<KeychipSession?>()
+        fun getCurrentSession() = currentSession.get()
+    }
+
     /**
      * Handle request before it's processed.
      */
@@ -48,6 +56,8 @@ class TokenChecker(
         if (token.isNotBlank() && (keyChipRepo.existsByKeychipId(token) || session != null
                 || (frontierProps.enabled && frontierProps.ftk == token)))
         {
+            currentSession.set(session)
+
             // Forward the request
             val w = RewriteWrapper(req, token).apply { setAttribute("token", token) }
             req.getRequestDispatcher(w.requestURI).forward(w, resp)

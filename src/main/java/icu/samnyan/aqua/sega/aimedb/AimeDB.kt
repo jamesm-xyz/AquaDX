@@ -4,6 +4,7 @@ import ext.toHex
 import icu.samnyan.aqua.net.db.AquaUserServices
 import icu.samnyan.aqua.sega.general.model.Card
 import icu.samnyan.aqua.sega.general.service.CardService
+import icu.samnyan.aqua.sega.allnet.AllNetProps
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufUtil
 import io.netty.buffer.Unpooled
@@ -25,6 +26,7 @@ import kotlin.jvm.optionals.getOrNull
 class AimeDB(
     val cardService: CardService,
     val us: AquaUserServices,
+    val allNetProps: AllNetProps,
 ): ChannelInboundHandlerAdapter() {
     val logger: Logger = LoggerFactory.getLogger(AimeDB::class.java)
 
@@ -65,7 +67,14 @@ class AimeDB(
             logger.info("AimeDB /${handler.name} : (game ${base.gameId}, keychip ${base.keychipId})")
 
             // Check keychip
-            if (!us.validKeychip(base.keychipId)) return logger.warn("> Rejected: Keychip not found")
+            if (!us.validKeychip(base.keychipId)) {
+                if (allNetProps.keychipPermissiveForTesting) {
+                    logger.warn("> Accepted invalid keychip ${base.keychipId} in permissive mode")
+                } else {
+                    logger.warn("> Rejected: Keychip not found")
+                    return
+                }
+            }
 
             handler.fn(data)?.let { ctx.write(it) }
         } finally {

@@ -13,6 +13,7 @@ import icu.samnyan.aqua.sega.wacca.WaccaOptionType.*
 import icu.samnyan.aqua.sega.wacca.model.BaseRequest
 import icu.samnyan.aqua.sega.wacca.model.db.*
 import io.ktor.client.utils.*
+import io.micrometer.core.instrument.Timer
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.time.TimeSource
+import kotlin.time.toJavaDuration
 
 val empty = emptyList<Any>()
 
@@ -31,6 +34,12 @@ class WaccaServer {
     @Autowired lateinit var cardRepo: CardRepository
     @Autowired lateinit var rp: WaccaRepos
     @Autowired lateinit var wacca: Wacca
+
+    data class ApiLabel(val api: String)
+    data class ApiErrorLabel(val api: String, val error: String)
+    val apiCountMetric = Metrics.counter<ApiLabel>("aquadx_wacca_api_count")
+    val apiErrorCountMetric = Metrics.counter<ApiErrorLabel>("aquadx_wacca_api_error_count")
+    val apiLatencyMetric = Metrics.timer<ApiLabel>("aquadx_wacca_api_latency")
 
     val handlerMap = mutableMapOf<String, (BaseRequest, List<Any>) -> Any>()
     val cacheMap = mutableMapOf<String, String>()
@@ -79,14 +88,21 @@ class WaccaServer {
     /** Handle all requests */
     @API("/api/**")
     fun handle(req: HttpServletRequest, @RB body: String): Any {
+        val startTime = TimeSource.Monotonic.markNow()
+        var timer: Timer? = null
+        var api = ""
         return try {
             val path = req.requestURI.removePrefix("/g/wacca").removePrefix("/WaccaServlet")
                 .removePrefix("/api").removePrefix("/").lowercase()
+
+            if (path !in cacheMap && path !in handlerMap) return resp("[]", 1, "Not Found")
+            api = path
+            apiCountMetric(ApiLabel(api)).increment()
             if (path in cacheMap) return resp(cacheMap[path]!!)
-            if (path !in handlerMap) return resp("[]", 1, "Not Found")
 
             log.info("Wacca < $path : $body")
 
+            timer = apiLatencyMetric(ApiLabel(api))
             val br = JACKSON.parse<BaseRequest>(body)
             handlerMap[path]!!(br, br.params).let { when (it) {
                 is String -> resp(it)
@@ -94,10 +110,16 @@ class WaccaServer {
                 else -> error("Invalid response type ${it.javaClass}")
             } }.also { log.info("Wacca > $path : ${it.body}") }
         }
-        catch (e: ApiException) { resp("[]", e.code, e.message ?: "") }
+        catch (e: ApiException) {
+            apiErrorCountMetric(ApiErrorLabel(api, e.code.toString())).increment()
+            resp("[]", e.code, e.message ?: "")
+        }
         catch (e: Exception) {
+            apiErrorCountMetric(ApiErrorLabel(api, e.javaClass.name)).increment()
             log.error("Wacca > Error", e)
             resp("[]", 500, e.message ?: "")
+        } finally {
+            timer?.record(startTime.elapsedNow().toJavaDuration())
         }
     }
 }
