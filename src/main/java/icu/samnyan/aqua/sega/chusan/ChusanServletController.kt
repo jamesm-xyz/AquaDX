@@ -1,15 +1,13 @@
 package icu.samnyan.aqua.sega.chusan
 
 import ext.*
+import icu.samnyan.aqua.net.db.APIMetrics
 import icu.samnyan.aqua.sega.chunithm.handler.impl.GetGameIdlistHandler
 import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.general.BaseHandler
-import io.micrometer.core.instrument.Timer
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.time.TimeSource
-import kotlin.time.toJavaDuration
 
 
 /**
@@ -73,11 +71,7 @@ class ChusanServletController(
     val getUserNetBattleRankingInfo: GetUserNetBattleRankingInfoHandler,
     val getGameMapAreaCondition: GetGameMapAreaConditionHandler
 ) {
-    data class ApiLabel(val api: String)
-    data class ApiErrorLabel(val api: String, val error: String)
-    val apiCountMetric = Metrics.counter<ApiLabel>("aquadx_chusan_api_count")
-    val apiErrorCountMetric = Metrics.counter<ApiErrorLabel>("aquadx_chusan_api_error_count")
-    val apiLatencyMetric = Metrics.timer<ApiLabel>("aquadx_chusan_api_latency")
+    val metrics = APIMetrics("chusan")
 
     val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
 
@@ -119,34 +113,25 @@ class ChusanServletController(
     @API("/{endpoint}")
     fun handle(@PV endpoint: Str, @RB request: MutableMap<Str, Any>, @PV version: Str): Any {
         var api = endpoint
-        val startTime = TimeSource.Monotonic.markNow()
-        var timer: Timer? = null
-        try {
-            request["version"] = version
+        request["version"] = version
 
-            // Export version
-            if (api.endsWith("C3Exp")) {
-                api = api.removeSuffix("C3Exp")
-                request["c3exp"] = true
-            }
+        // Export version
+        if (api.endsWith("C3Exp")) {
+            api = api.removeSuffix("C3Exp")
+            request["c3exp"] = true
+        }
 
-            apiCountMetric(ApiLabel(api)).increment()
-            logger.info("Chu3 $api : $request")
+        logger.info("Chu3 $api : $request")
 
-            if (api in noopEndpoint) {
-                return """{"returnCode":"1"}"""
-            }
+        if (api in noopEndpoint) {
+            return """{"returnCode":"1"}"""
+        }
 
-            timer = apiLatencyMetric(ApiLabel(api))
-            return handlers[api]?.handle(request) ?: {
+        return metrics[api] {
+            handlers[api]?.handle(request) ?: {
                 logger.warn("Chu3 $api not found")
                 """{"returnCode":"1","apiName":"$api"}"""
             }
-        } catch (e: Exception) {
-            apiErrorCountMetric(ApiErrorLabel(api, e.javaClass.name)).increment()
-            throw e;
-        } finally {
-            timer?.record(startTime.elapsedNow().toJavaDuration())
         }
     }
 }

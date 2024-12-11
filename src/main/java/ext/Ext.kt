@@ -5,9 +5,6 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
-import io.micrometer.core.instrument.*
-import io.micrometer.core.instrument.Timer
-import io.micrometer.core.instrument.Metrics as Micrometer
 import jakarta.persistence.Query
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,7 +22,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty1
@@ -167,6 +163,7 @@ val Any?.truthy get() = when (this) {
 
 // Collections
 fun <T> ls(vararg args: T) = args.toList()
+inline fun <reified T> arr(vararg args: T) = arrayOf(*args)
 operator fun <K, V> Map<K, V>.plus(map: Map<K, V>) =
     (if (this is MutableMap) this else toMutableMap()).apply { putAll(map) }
 operator fun <K, V> MutableMap<K, V>.plusAssign(map: Map<K, V>) { putAll(map) }
@@ -218,45 +215,3 @@ val <S> Pair<*, S>.r get() = component2()
 
 // Database
 val Query.exec get() = resultList.map { (it as Array<*>).toList() }
-
-// Metrics
-object Metrics {
-    @PublishedApi
-    internal inline fun <reified T : Any> expandLabels(labels: T): Array<String> {
-        return T::class.memberProperties.flatMap { prop ->
-            listOf(prop.name, prop.get(labels)?.toString() ?: throw IllegalArgumentException("Missing value for label ${prop.name}"))
-        }.toTypedArray()
-    }
-
-    @PublishedApi
-    internal data class MetricCacheKey(val metricName: String, val labels: Any)
-
-    @PublishedApi
-    internal val counterCache = ConcurrentHashMap<MetricCacheKey, Counter>()
-
-    inline fun <reified T : Any> counter(metricName: String): (T) -> Counter {
-        return { labels ->
-            counterCache.computeIfAbsent(MetricCacheKey(metricName, labels)) {
-                Counter
-                    .builder(metricName)
-                    .tags(*expandLabels(labels))
-                    .register(Micrometer.globalRegistry)
-            }
-        }
-    }
-
-    @PublishedApi
-    internal val timerCache = ConcurrentHashMap<MetricCacheKey, Timer>()
-
-    inline fun <reified T : Any> timer(metricName: String): (T) -> Timer {
-        return { labels ->
-            timerCache.computeIfAbsent(MetricCacheKey(metricName, labels)) {
-                Timer
-                    .builder(metricName)
-                    .publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99)
-                    .tags(*expandLabels(labels))
-                    .register(Micrometer.globalRegistry)
-            }
-        }
-    }
-}

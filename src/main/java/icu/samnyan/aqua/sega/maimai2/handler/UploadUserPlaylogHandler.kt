@@ -1,12 +1,12 @@
 package icu.samnyan.aqua.sega.maimai2.handler
 
-import ext.Metrics
 import ext.millis
+import icu.samnyan.aqua.net.db.APIMetrics
+import icu.samnyan.aqua.net.db.unaryPlus
 import icu.samnyan.aqua.sega.allnet.TokenChecker
+import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.maimai2.model.Mai2UserDataRepo
 import icu.samnyan.aqua.sega.maimai2.model.Mai2UserPlaylogRepo
-import icu.samnyan.aqua.sega.general.BaseHandler
-import icu.samnyan.aqua.sega.maimai2.Maimai2ServletController.ApiLabel
 import icu.samnyan.aqua.sega.maimai2.model.request.UploadUserPlaylog
 import icu.samnyan.aqua.sega.maimai2.model.userdata.Mai2UserPlaylog
 import icu.samnyan.aqua.sega.util.jackson.BasicMapper
@@ -31,8 +31,7 @@ class UploadUserPlaylogHandler(
         val VALID_GAME_IDS = setOf("SDEZ", "SDGA", "SDGB")
     }
 
-    data class GameIdVersionLabel(val gameId: String, val version: String)
-    val gameVersionCountMetric = Metrics.counter<GameIdVersionLabel>("aquadx_maimai2_game_version_count")
+    val metrics = APIMetrics("maimai2")
 
     override fun handle(request: Map<String, Any>): String {
         val req = mapper.convert(request, UploadUserPlaylog::class.java)
@@ -41,7 +40,7 @@ class UploadUserPlaylogHandler(
         if (version != null) {
             val session = TokenChecker.getCurrentSession()
             val gameId = if (session?.gameId in VALID_GAME_IDS) session!!.gameId else ""
-            gameVersionCountMetric(GameIdVersionLabel(gameId, version)).increment()
+            +metrics["game_version_count", "game_id" to gameId, "version" to version]
         }
 
         // Save if the user is registered
