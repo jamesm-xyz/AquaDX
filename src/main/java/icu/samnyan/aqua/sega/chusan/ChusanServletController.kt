@@ -1,14 +1,14 @@
 package icu.samnyan.aqua.sega.chusan
 
 import ext.*
-import icu.samnyan.aqua.net.db.APIMetrics
+import icu.samnyan.aqua.net.utils.simpleDescribe
 import icu.samnyan.aqua.sega.chunithm.handler.impl.GetGameIdlistHandler
 import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.general.BaseHandler
+import icu.samnyan.aqua.spring.Metrics
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 import kotlin.reflect.full.declaredMemberProperties
-
 
 /**
  * @author samnyan (privateamusement@protonmail.com)
@@ -71,8 +71,6 @@ class ChusanServletController(
     val getUserNetBattleRankingInfo: GetUserNetBattleRankingInfoHandler,
     val getGameMapAreaCondition: GetGameMapAreaConditionHandler
 ) {
-    val metrics = APIMetrics("chusan")
-
     val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
 
     val getUserCtoCPlay = BaseHandler { """{"userId":"${it["userId"]}","orderBy":"0","count":"0","userCtoCPlayList":[]}""" }
@@ -122,16 +120,31 @@ class ChusanServletController(
         }
 
         logger.info("Chu3 $api : $request")
+        if (api !in noopEndpoint && !handlers.containsKey(api)) {
+            logger.warn("Chu3 $api not found")
+            return """{"returnCode":"1","apiName":"$api"}"""
+        }
+
+        // Only record the counter metrics if the API is known.
+        Metrics.counter("aquadx_chusan_api_call", "api" to api).increment()
 
         if (api in noopEndpoint) {
             return """{"returnCode":"1"}"""
         }
 
-        return metrics[api] {
-            handlers[api]?.handle(request) ?: {
-                logger.warn("Chu3 $api not found")
-                """{"returnCode":"1","apiName":"$api"}"""
+        return try {
+            Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
+                handlers[api]?.handle(request) ?: {
+                    logger.warn("Chu3 $api not found")
+                    """{"returnCode":"1","apiName":"$api"}"""
+                }
             }
+        } catch (e: Exception) {
+            Metrics.counter(
+                "aquadx_chusan_api_error",
+                "api" to api, "error" to e.simpleDescribe()
+            ).increment()
+            throw e
         }
     }
 }
