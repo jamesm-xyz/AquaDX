@@ -23,7 +23,11 @@ class APICounter(val api: String, val metrics: APIMetrics) {
         val start = TimeSource.Monotonic.markNow()
         try { return fn().also { +this } }
         catch (e: Exception) { throw e.also { this % e } }
-        finally { metrics.timer("api_latency", arr("api", api)).record(start.elapsedNow().toJavaDuration()) }
+        finally {
+            metrics
+                .timer("api_latency", arr("api", api))
+                .record(start.elapsedNow().toJavaDuration())
+        }
     }
 }
 
@@ -35,11 +39,18 @@ class APIMetrics(val domain: String) {
         get(name, pairs.flatMap { listOf(it.first, it.second.toString()) }.toTypedArray())
 
     operator fun get(name: String, tag: Array<String>) = cache.computeIfAbsent(tag) {
-        Counter.builder("aquadx_${domain}_$name").tags(*tag).register(reg)
+        Counter
+            .builder("aquadx_${domain}_$name")
+            .tags(*tag)
+            .register(reg)
     } as Counter
 
     fun timer(name: String, tag: Array<String>) = cache.computeIfAbsent(tag) {
-        Timer.builder("aquadx_${domain}_$name").tags(*tag).publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99).register(reg)
+        Timer
+            .builder("aquadx_${domain}_$name")
+            .tags(*tag)
+            .publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99)
+            .register(reg)
     } as Timer
 
     operator fun get(api: String) = APICounter(api, this)
