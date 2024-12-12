@@ -25,6 +25,7 @@ class AllNetProps {
     var port: Int? = null
     val keychipSesExpire: Long = 172800000 // milliseconds
     var checkKeychip: Boolean = false
+    var keychipPermissiveForTesting: Boolean = false
     var redirect: String = "web"
 
     var placeName: String = ""
@@ -102,8 +103,10 @@ class AllNet(
         // game_id SDEZ, ver 1.35, serial A0000001234, ip, firm_ver 50000, boot_ver 0000,
         // encode UTF-8, format_ver 3, hops 1， token 2010451813
         val reqMap = decodeAllNet(dataStream.readAllBytes())
-        var serial = reqMap["serial"] ?: ""
+        val serial = reqMap["serial"] ?: ""
         logger.info("AllNet /PowerOn : $reqMap")
+
+        var session: String? = null
 
         // Proper keychip authentication
         if (props.checkKeychip) {
@@ -112,11 +115,20 @@ class AllNet(
             if (u != null) {
                 // Create a new session for the user
                 logger.info("> Keychip authenticated: ${u.auId} ${u.computedName}")
-                serial = keychipSessionService.new(u).token
+                session = keychipSessionService.new(u, reqMap["game_id"] ?: "").token
             }
 
             // Check if it's a whitelisted keychip
-            else if (serial.isEmpty() || !keychipRepo.existsByKeychipId(serial)) {
+            else if (!serial.isEmpty() && keychipRepo.existsByKeychipId(serial)) {
+                session = keychipSessionService.new(null, reqMap["game_id"] ?: "").token
+            }
+
+            else if (props.keychipPermissiveForTesting) {
+                logger.warn("> Accepted invalid keychip $serial in permissive mode")
+                session = keychipSessionService.new(null, reqMap["game_id"] ?: "").token
+            }
+
+            else {
                 // This will cause an allnet auth bad on client side
                 return "".also { logger.warn("> Rejected: Keychip not found") }
             }
@@ -127,7 +139,7 @@ class AllNet(
 
         val formatVer = reqMap["format_ver"] ?: ""
         val resp = props.map.toMutableMap() + mapOf(
-            "uri" to switchUri(localAddr, localPort, gameId, ver, serial),
+            "uri" to switchUri(localAddr, localPort, gameId, ver, session),
             "host" to props.host.ifBlank { localAddr },
         )
 
@@ -160,15 +172,15 @@ class AllNet(
         return resp.toUrl() + "\n"
     }
 
-    private fun switchUri(localAddr: Str, localPort: Str, gameId: Str, ver: Str, serial: Str): Str {
+    private fun switchUri(localAddr: Str, localPort: Str, gameId: Str, ver: Str, session: Str?): Str {
         val addr = props.host.ifBlank { localAddr }
         val port = props.port?.toString() ?: localPort
 
         // If keychip authentication is enabled, the game URLs will be set to /gs/{token}/{game}/...
-        val base = if (props.checkKeychip) "gs/$serial" else "g"
+        val base = if (session != null) "gs/$session" else "g"
 
         return "http://$addr:$port/$base/" + when (gameId) {
-            "SDBT" -> "chu2/$ver/$serial/"
+            "SDBT" -> "chu2/$ver/$session/"
             "SDHD" -> "chu3/$ver/"
             "SDGS" -> "chu3/$ver/" // International (c3exp)
             "SBZV" -> "diva/"

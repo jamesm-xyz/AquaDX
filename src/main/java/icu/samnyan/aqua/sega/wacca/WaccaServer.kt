@@ -4,6 +4,7 @@ import ext.*
 import icu.samnyan.aqua.net.db.AquaGameOptions
 import icu.samnyan.aqua.net.games.wacca.Wacca
 import icu.samnyan.aqua.net.utils.ApiException
+import icu.samnyan.aqua.net.utils.simpleDescribe
 import icu.samnyan.aqua.sega.general.dao.CardRepository
 import icu.samnyan.aqua.sega.wacca.WaccaItemType.*
 import icu.samnyan.aqua.sega.wacca.WaccaItemType.NOTE_COLOR
@@ -12,6 +13,7 @@ import icu.samnyan.aqua.sega.wacca.WaccaItemType.TOUCH_EFFECT
 import icu.samnyan.aqua.sega.wacca.WaccaOptionType.*
 import icu.samnyan.aqua.sega.wacca.model.BaseRequest
 import icu.samnyan.aqua.sega.wacca.model.db.*
+import icu.samnyan.aqua.spring.Metrics
 import io.ktor.client.utils.*
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
@@ -79,25 +81,42 @@ class WaccaServer {
     /** Handle all requests */
     @API("/api/**")
     fun handle(req: HttpServletRequest, @RB body: String): Any {
-        return try {
-            val path = req.requestURI.removePrefix("/g/wacca").removePrefix("/WaccaServlet")
-                .removePrefix("/api").removePrefix("/").lowercase()
-            if (path in cacheMap) return resp(cacheMap[path]!!)
-            if (path !in handlerMap) return resp("[]", 1, "Not Found")
+        // Normalize path
+        val path = req.requestURI.removePrefix("/g/wacca").removePrefix("/WaccaServlet")
+            .removePrefix("/api").removePrefix("/").lowercase()
 
-            log.info("Wacca < $path : $body")
-
-            val br = JACKSON.parse<BaseRequest>(body)
-            handlerMap[path]!!(br, br.params).let { when (it) {
-                is String -> resp(it)
-                is List<*> -> resp(it.toJson())
-                else -> error("Invalid response type ${it.javaClass}")
-            } }.also { log.info("Wacca > $path : ${it.body}") }
+        if (path !in cacheMap && path !in handlerMap) {
+            return resp("[]", 1, "Not Found")
         }
-        catch (e: ApiException) { resp("[]", e.code, e.message ?: "") }
-        catch (e: Exception) {
-            log.error("Wacca > Error", e)
-            resp("[]", 500, e.message ?: "")
+
+        // Only record the counter metrics if the API is known.
+        Metrics.counter("aquadx_wacca_api_call", "api" to path).increment()
+
+        if (path in cacheMap) return resp(cacheMap[path]!!)
+
+        log.info("Wacca < $path : $body")
+
+        return try {
+            Metrics.timer("aquadx_wacca_api_latency", "api" to path).recordCallable {
+                val br = JACKSON.parse<BaseRequest>(body)
+                handlerMap[path]!!(br, br.params).let { when (it) {
+                    is String -> resp(it)
+                    is List<*> -> resp(it.toJson())
+                    else -> error("Invalid response type ${it.javaClass}")
+                } }.also { log.info("Wacca > $path : ${it.body}") }
+            }
+        } catch (e: Exception) {
+            Metrics.counter(
+                "aquadx_wacca_api_error",
+                "api" to path, "error" to e.simpleDescribe()
+            ).increment()
+
+            if (e is ApiException) {
+                resp("[]", e.code, e.message ?: "")
+            } else {
+                log.error("Wacca > Error", e)
+                resp("[]", 500, e.message ?: "")
+            }
         }
     }
 }

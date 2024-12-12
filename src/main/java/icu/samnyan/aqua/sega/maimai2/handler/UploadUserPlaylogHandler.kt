@@ -1,12 +1,14 @@
 package icu.samnyan.aqua.sega.maimai2.handler
 
 import ext.millis
+import icu.samnyan.aqua.sega.allnet.TokenChecker
+import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.maimai2.model.Mai2UserDataRepo
 import icu.samnyan.aqua.sega.maimai2.model.Mai2UserPlaylogRepo
-import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.maimai2.model.request.UploadUserPlaylog
 import icu.samnyan.aqua.sega.maimai2.model.userdata.Mai2UserPlaylog
 import icu.samnyan.aqua.sega.util.jackson.BasicMapper
+import icu.samnyan.aqua.spring.Metrics
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import kotlin.jvm.optionals.getOrNull
@@ -24,10 +26,22 @@ class UploadUserPlaylogHandler(
     companion object {
         @JvmStatic
         val playBacklog = mutableMapOf<Long, MutableList<BacklogEntry>>()
+
+        val VALID_GAME_IDS = setOf("SDEZ", "SDGA", "SDGB")
     }
 
     override fun handle(request: Map<String, Any>): String {
         val req = mapper.convert(request, UploadUserPlaylog::class.java)
+
+        val version = tryParseGameVersion(req.userPlaylog.version)
+        if (version != null) {
+            val session = TokenChecker.getCurrentSession()
+            val gameId = if (session?.gameId in VALID_GAME_IDS) session!!.gameId else ""
+            Metrics.counter(
+                "aquadx_maimai2_playlog_game_version",
+                "game_id" to gameId, "version" to version
+            ).increment()
+        }
 
         // Save if the user is registered
         val u = userDataRepository.findByCardExtId(req.userId).getOrNull()
@@ -51,5 +65,14 @@ class UploadUserPlaylogHandler(
         val now = millis()
         playBacklog.filter { (_, v) -> v.isEmpty() || v[0].time - now > 300_000 }.toList()
             .forEach { (k, _) -> playBacklog.remove(k) }
+    }
+
+    private fun tryParseGameVersion(version: Int): String? {
+        val major = version / 1000000
+        val minor = version / 1000 % 1000
+        if (major != 1) return null
+        if (minor !in 0..99) return null
+        // e.g. "1.30", minor should have two digits
+        return "$major.${minor.toString().padStart(2, '0')}"
     }
 }

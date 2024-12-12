@@ -21,7 +21,10 @@ import java.security.SecureRandom
 class KeychipSession(
     @ManyToOne
     @JoinColumn(name = "au_id")
-    var user: AquaNetUser = AquaNetUser(),
+    var user: AquaNetUser? = null,
+
+    @Column(length = 4)
+    val gameId: String,
 
     @Id
     @Column(length = 32)
@@ -69,8 +72,8 @@ class KeychipSessionService(
     /**
      * Create a new session.
      */
-    fun new(user: AquaNetUser): KeychipSession {
-        val session = KeychipSession(user = user)
+    fun new(user: AquaNetUser?, gameId: String): KeychipSession {
+        val session = KeychipSession(user = user, gameId = gameId)
         return keychipSessionRepo.save(session)
     }
 

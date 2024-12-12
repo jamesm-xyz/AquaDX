@@ -2,9 +2,11 @@ package icu.samnyan.aqua.sega.maimai2
 
 import ext.*
 import icu.samnyan.aqua.net.utils.ApiException
+import icu.samnyan.aqua.net.utils.simpleDescribe
 import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.maimai2.handler.*
 import icu.samnyan.aqua.sega.maimai2.model.Mai2Repos
+import icu.samnyan.aqua.spring.Metrics
 import io.ktor.client.request.*
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
@@ -339,29 +341,42 @@ class Maimai2ServletController(
 
     @API("/{api}")
     fun handle(@PathVariable api: String, @RequestBody request: Map<String, Any>): Any {
-        try {
-            logger.info("Mai2 < $api : ${request.toJson()}") // TODO: Optimize logging
+        logger.info("Mai2 < $api : ${request.toJson()}") // TODO: Optimize logging
+        if (api !in noopEndpoint && api !in staticEndpoint && !handlers.containsKey(api)) {
+            logger.warn("Mai2 > $api not found")
+            return """{"returnCode":1,"apiName":"com.sega.maimai2servlet.api.$api"}"""
+        }
 
-            if (api in noopEndpoint) {
-                logger.info("Mai2 > $api no-op")
-                return """{"returnCode":1,"apiName":"com.sega.maimai2servlet.api.$api"}"""
-            }
+        // Only record the counter metrics if the API is known.
+        Metrics.counter("aquadx_maimai2_api_call", "api" to api).increment()
 
-            if (api in staticEndpoint) {
-                logger.info("Mai2 > $api static")
-                return staticEndpoint[api]!!
-            }
+        if (api in noopEndpoint) {
+            logger.info("Mai2 > $api no-op")
+            return """{"returnCode":1,"apiName":"com.sega.maimai2servlet.api.$api"}"""
+        }
 
-            return handlers[api]?.handle(request)?.let { if (it is String) it else it.toJson() }?.also {
-                if (api !in setOf("GetUserItemApi", "GetGameEventApi"))
-                    logger.info("Mai2 > $api : $it")
-            } ?: {
-                logger.warn("Mai2 > $api not found")
-                """{"returnCode":1,"apiName":"com.sega.maimai2servlet.api.$api"}"""
+        if (api in staticEndpoint) {
+            logger.info("Mai2 > $api static")
+            return staticEndpoint[api]!!
+        }
+
+        return try {
+            Metrics.timer("aquadx_maimai2_api_latency", "api" to api).recordCallable {
+                handlers[api]!!.handle(request).let { if (it is String) it else it.toJson() }.also {
+                    if (api !in setOf("GetUserItemApi", "GetGameEventApi"))
+                        logger.info("Mai2 > $api : $it")
+                }
             }
-        } catch (e: ApiException) {
-            // It's a bad practice to return 200 ok on error, but this is what maimai does so we have to follow
-            return ResponseEntity.ok().body("""{"returnCode":0,"apiName":"com.sega.maimai2servlet.api.$api","message":"${e.message?.replace("\"", "\\\"")} - ${e.code}"}""")
+        } catch (e: Exception) {
+            Metrics.counter(
+                "aquadx_maimai2_api_error",
+                "api" to api, "error" to e.simpleDescribe()
+            ).increment()
+
+            if (e is ApiException) {
+                // It's a bad practice to return 200 ok on error, but this is what maimai does so we have to follow
+                return ResponseEntity.ok().body("""{"returnCode":0,"apiName":"com.sega.maimai2servlet.api.$api","message":"${e.message?.replace("\"", "\\\"")} - ${e.code}"}""")
+            } else throw e
         }
     }
 }
