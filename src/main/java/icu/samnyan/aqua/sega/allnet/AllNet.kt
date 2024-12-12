@@ -23,6 +23,7 @@ import java.util.*
 class AllNetProps {
     var host: String = ""
     var port: Int? = null
+    var hidePort: Boolean = true
     val keychipSesExpire: Long = 172800000 // milliseconds
     var checkKeychip: Boolean = false
     var keychipPermissiveForTesting: Boolean = false
@@ -173,13 +174,13 @@ class AllNet(
     }
 
     private fun switchUri(localAddr: Str, localPort: Str, gameId: Str, ver: Str, session: Str?): Str {
-        val addr = props.host.ifBlank { localAddr }
-        val port = props.port?.toString() ?: localPort
+        val addr = props.host.ifBlank { localAddr } +
+            if (props.hidePort) "" else ":${props.port?.toString() ?: localPort}"
 
         // If keychip authentication is enabled, the game URLs will be set to /gs/{token}/{game}/...
         val base = if (session != null) "gs/$session" else "g"
 
-        return "http://$addr:$port/$base/" + when (gameId) {
+        return "http://$addr/$base/" + when (gameId) {
             "SDBT" -> "chu2/$ver/$session/"
             "SDHD" -> "chu3/$ver/"
             "SDGS" -> "chu3/$ver/" // International (c3exp)
