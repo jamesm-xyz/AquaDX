@@ -3,7 +3,6 @@ package icu.samnyan.aqua.api.controller.sega.game.chuni.v2;
 import com.fasterxml.jackson.core.type.TypeReference;
 import icu.samnyan.aqua.api.model.MessageResponse;
 import icu.samnyan.aqua.api.model.ReducedPageResponse;
-import icu.samnyan.aqua.api.model.resp.sega.chuni.v2.ProfileResp;
 import icu.samnyan.aqua.api.model.resp.sega.chuni.v2.RatingItem;
 import icu.samnyan.aqua.api.model.resp.sega.chuni.v2.RecentResp;
 import icu.samnyan.aqua.api.model.resp.sega.chuni.v2.external.Chu3DataExport;
@@ -63,24 +62,6 @@ public class ApiChuniV2PlayerDataController {
     private final UserPlaylogService userPlaylogService;
     private final UserGeneralDataService userGeneralDataService;
     private final GameMusicService gameMusicService;
-
-    /**
-     * Get Basic info
-     *
-     * @return
-     */
-    @GetMapping("profile")
-    public ProfileResp getProfile(@RequestParam String aimeId) {
-        ProfileResp resp = mapper.convert(userDataService.getUserByExtId(aimeId).orElseThrow(), new TypeReference<>() {
-        });
-        UserCourse course = userCourseService.getByUserId(aimeId)
-                .stream()
-                .filter(UserCourse::isClear)
-                .max(Comparator.comparingInt(UserCourse::getClassId))
-                .orElseGet(() -> new UserCourse(0));
-        resp.setCourseClass(course.getClassId());
-        return resp;
-    }
 
     @PutMapping("profile/username")
     public Chu3UserData updateName(@RequestBody Map<String, Object> request) {
