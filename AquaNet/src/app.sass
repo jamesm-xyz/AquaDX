@@ -133,6 +133,7 @@ input
   transition: $transition
   box-sizing: border-box
 
+// Dropdown
 select
   border-radius: $border-radius
   border: 1px solid transparent
@@ -143,6 +144,13 @@ select
   background-color: $ov-lighter
   transition: $transition
   box-sizing: border-box
+
+  option
+    background-color: #333
+    color: #fff
+
+  option:hover
+    background-color: #555
 
 input[type="checkbox"]
   width: 1.2em
@@ -329,3 +337,5 @@ nav
   padding: 4px 8px
   background: $ov-lighter
   backdrop-filter: blur(5px)
+
+
