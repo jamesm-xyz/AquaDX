@@ -8,7 +8,6 @@
   import { USER, USERBOX } from "../libs/sdk";
   import { t, ts } from "../libs/i18n";
   import { DATA_HOST, HAS_USERBOX_ASSETS } from "../libs/config";
-  import { FADE_IN, FADE_OUT } from "../libs/config";
   import { fade, slide } from "svelte/transition";
   import StatusOverlays from "./StatusOverlays.svelte";
   import Icon from "@iconify/svelte";
@@ -18,9 +17,6 @@
   let error = "";
   let submitting = "";
   let changed: string[] = [];
-
-  let tab = 0;
-  const tabs = ["chusan", "ongeki", "maimai"];
 
   // Things that can be changed in the userbox
   const userBoxFields = [
@@ -149,9 +145,9 @@
     const currentValues = await USERBOX.getProfile().catch((e) => {
       loading = false;
       error = t("userbox.error.noprofile")
-    });
+    })
 
-    if(!currentValues) return;
+    if (!currentValues) return
 
     values = {
       nameplate: currentValues.nameplateId,
@@ -174,7 +170,7 @@
       return
     });
 
-    if(!itemLabels) return;
+    if (!itemLabels) return;
 
     await Promise.all(
       userBoxItems.map(async (kind) => {
@@ -300,176 +296,138 @@
 </script>
 
 {#if !loading && !error}
-  <div class="outer-container">
-    <nav>
-      {#each tabs as tabName, i}
-        <div
-          transition:slide={{ axis: "x" }}
-          class:active={tab === i}
-          on:click={() => {
-            tab = i;
+  <div class="fields">
+    {#each userBoxFields as { key, label, kind }, i (key)}
+      <div class="field">
+        <label for={key}>{label}</label>
+        <div>
+          <select bind:value={values[key]} id={key} on:change={() => changed = [...changed, key]}>
+            {#each availableOptions[key] as option}
+              <option value={option.id}>{option.label || `${key} ${option.id.toString()}`}</option>
+            {/each}
+          </select>
+          {#if changed.includes(key)}
+            <button
+              transition:slide={{ axis: "x" }}
+              on:click={() => {
+                const newValue = values[key];
 
-            // Set url params
-            window.history.pushState({}, "", `/settings?tab=${tab}`);
-          }}
-          on:keydown={(e) => e.key === "Enter" && (tab = i)}
-          role="button"
-          tabindex="0"
-        >
-          {ts(`userbox.tabs.${tabName}`)}
-        </div>
-      {/each}
-    </nav>
-    {#if tab === 0}
-      <div class="container" out:fade={FADE_OUT} in:fade={FADE_IN}>
-        <div class="fields">
-          {#each userBoxFields as { key, label, kind }, i (key)}
-            <div class="field">
-              <label for={key}>{label}</label>
-              <div>
-                <select
-                  bind:value={values[key]}
-                  id={key}
-                  on:change={() => {
-                    changed = [...changed, key];
-                  }}
-                >
-                  {#each availableOptions[key] as option (option)}
-                    <option value={option.id}
-                      >{option.label ||
-                        `${key} ${option.id.toString()}`}</option
-                    >
-                  {/each}
-                </select>
-                {#if changed.includes(key)}
-                  <button
-                    transition:slide={{ axis: "x" }}
-                    on:click={() => {
-                      const newValue = values[key];
+                if (newValue === undefined) return;
 
-                      if (newValue === undefined) return;
-
-                      submit(generateBodyFromKind(key, newValue));
-                    }}
-                  >
-                    {#if submitting === key}
-                      <Icon icon="line-md:loading-twotone-loop" />
-                    {:else}
-                      {t("settings.profile.save")}
-                    {/if}
-                  </button>
-                {/if}
-              </div>
-            </div>
-          {/each}
-        </div>
-        {#if HAS_USERBOX_ASSETS}
-          <div class="preview">
-            <h2>{t("userbox.preview.ui")}</h2>
-            <!-- Frame -->
-            {#if values.frame}
-              <img
-                src={`${DATA_HOST}/d/chu3/frame/${values.frame}.png`}
-                alt="Preview"
-              />
-            {/if}
-
-            <div class="secondrow">
-              <!-- Map Icon -->
-              {#if values.mapicon}
-                <div class="mapicon">
-                  <img
-                    src={`${DATA_HOST}/d/chu3/mapicon/${values.mapicon}.png`}
-                    alt="Preview"
-                  />
-                </div>
+                submit(generateBodyFromKind(key, newValue));
+              }}
+            >
+              {#if submitting === key}
+                <Icon icon="line-md:loading-twotone-loop" />
+              {:else}
+                {t("settings.profile.save")}
               {/if}
+            </button>
+          {/if}
+        </div>
+      </div>
+    {/each}
+  </div>
+  {#if HAS_USERBOX_ASSETS}
+    <div class="preview">
+      <h2>{t("userbox.preview.ui")}</h2>
+      <!-- Frame -->
+      {#if values.frame}
+        <img
+          src={`${DATA_HOST}/d/chu3/frame/${values.frame}.png`}
+          alt="Preview"
+        />
+      {/if}
 
-              <!-- System voice -->
-              {#if values.voice}
-                <div>
-                  <img
-                    src={`${DATA_HOST}/d/chu3/systemVoice/${values.voice}.png`}
-                    alt="Preview"
-                  />
-                </div>
-              {/if}
-            </div>
+      <div class="secondrow">
+        <!-- Map Icon -->
+        {#if values.mapicon}
+          <div class="mapicon">
+            <img
+              src={`${DATA_HOST}/d/chu3/mapicon/${values.mapicon}.png`}
+              alt="Preview"
+            />
+          </div>
+        {/if}
 
-            <h2>{t("userbox.preview.nameplate")}</h2>
-            <!-- Nameplate -->
-            {#if values.nameplate}
-              <div class="nameplate">
-                <img
-                  src={`${DATA_HOST}/d/chu3/nameplate/${values.nameplate}.png`}
-                  alt="Preview"
-                />
-                <p class="trophy">
-                  {availableOptions.trophy.find((x) => x.id === values.trophy)
-                    ?.label}
-                </p>
-                <div class="username">
-                  <p>
-                    {user.displayName}
-                  </p>
-                </div>
-              </div>
-            {/if}
-
-            <h2>{t("userbox.preview.avatar")}</h2>
-            <div class="avatar">
-              <div>
-                <img
-                  src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.wear}.png`}
-                  alt="Preview"
-                />
-              </div>
-              <div>
-                <img
-                  src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.head}.png`}
-                  alt="Preview"
-                />
-              </div>
-              <div>
-                <img
-                  src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.face}.png`}
-                  alt="Preview"
-                />
-              </div>
-              <div>
-                <img
-                  src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.skin}.png`}
-                  alt="Preview"
-                />
-              </div>
-              <div>
-                <img
-                  src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.item}.png`}
-                  alt="Preview"
-                />
-              </div>
-              <div>
-                <img
-                  src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.front}.png`}
-                  alt="Preview"
-                />
-              </div>
-              <div>
-                <img
-                  src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.back}.png`}
-                  alt="Preview"
-                />
-              </div>
-            </div>
+        <!-- System voice -->
+        {#if values.voice}
+          <div>
+            <img
+              src={`${DATA_HOST}/d/chu3/systemVoice/${values.voice}.png`}
+              alt="Preview"
+            />
           </div>
         {/if}
       </div>
-    {:else}
-      <div>
-        <p>WIP</p>
+
+      <h2>{t("userbox.preview.nameplate")}</h2>
+      <!-- Nameplate -->
+      {#if values.nameplate}
+        <div class="nameplate">
+          <img
+            src={`${DATA_HOST}/d/chu3/nameplate/${values.nameplate}.png`}
+            alt="Preview"
+          />
+          <p class="trophy">
+            {availableOptions.trophy.find((x) => x.id === values.trophy)
+              ?.label}
+          </p>
+          <div class="username">
+            <p>
+              {user.displayName}
+            </p>
+          </div>
+        </div>
+      {/if}
+
+      <h2>{t("userbox.preview.avatar")}</h2>
+      <div class="avatar">
+        <div>
+          <img
+            src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.wear}.png`}
+            alt="Preview"
+          />
+        </div>
+        <div>
+          <img
+            src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.head}.png`}
+            alt="Preview"
+          />
+        </div>
+        <div>
+          <img
+            src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.face}.png`}
+            alt="Preview"
+          />
+        </div>
+        <div>
+          <img
+            src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.skin}.png`}
+            alt="Preview"
+          />
+        </div>
+        <div>
+          <img
+            src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.item}.png`}
+            alt="Preview"
+          />
+        </div>
+        <div>
+          <img
+            src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.front}.png`}
+            alt="Preview"
+          />
+        </div>
+        <div>
+          <img
+            src={`${DATA_HOST}/d/chu3/avatarAccessory/${values.back}.png`}
+            alt="Preview"
+          />
+        </div>
       </div>
-    {/if}
-  </div>
+    </div>
+  {/if}
 {/if}
 <StatusOverlays {error} {loading} />
 
