@@ -8,7 +8,6 @@ import type {
   TrendEntry,
   AquaNetUser, GameOption,
   UserBox,
-  ChangeUserBoxReq,
   UserBoxItemKind
 } from './generalTypes'
 import type { GameName } from './scoring'
@@ -94,6 +93,7 @@ export async function post(endpoint: string, params: Record<string, any> = {}, i
 export async function get(endpoint: string, params:any,init?: RequestInitWithParams): Promise<any> {
   // Add token if exists
   const token = localStorage.getItem('token')
+  if (token && !('token' in params)) params = { ...(params ?? {}), token }
 
   if (init?.localCache) {
     const cached = cache[endpoint + JSON.stringify(init)]
@@ -262,23 +262,13 @@ export const USER = {
 }
 
 export const USERBOX = {
-  getAimeId:(cardId:string):Promise<{luid:string}|null> =>realPost('/api/sega/aime/getByAccessCode',{ accessCode:cardId }),
-  getProfile:(aimeId:string):Promise<UserBox> =>get('/api/game/chuni/v2/profile',{ aimeId }),
-  getUnlockedItems:(aimeId:string, itemId: UserBoxItemKind):Promise<{itemKind:number, itemId:number,stock:number,isValid:boolean}[]> =>
-    get(`/api/game/chuni/v2/item/${itemId}`,{ aimeId }),
-  getItemLabels:() => {
-    const kinds = [ 'nameplate', 'frame', 'trophy', 'mapicon', 'sysvoice', 'avatar' ]
-
-    return Promise.all(kinds.map(it =>
-      get(`/api/game/chuni/v2/data/${it}`,{}).then((res:{id:number,name:string}[]) =>
-        // Use the id as the key
-        res.reduce((acc, cur) => ({ ...acc, [cur.id]: cur.name }), {}) as { [index: number]: string }
-      ))).then(([ nameplate, frame, trophy, mapicon, sysvoice, avatar ]) => ({
-      nameplate, frame, trophy, mapicon, sysvoice, avatar
-    }))
-  },
-  setUserBox:({ kind,...body }:ChangeUserBoxReq) =>
-    put(`/api/game/chuni/v2/profile/${kind}`, body),
+  getProfile: (): Promise<UserBox> =>
+    get('/api/v2/game/chu3/user-box', {}),
+  getUnlockedItems: (itemId: UserBoxItemKind): Promise<{ itemKind: number, itemId: number, stock: number, isValid: boolean }[]> =>
+    get(`/api/v2/game/chu3/user-box-item-by-kind`,{ itemId }),
+  getItemLabels: () => get(`/api/v2/game/chu3/user-box-all-items`, {}),
+  setUserBox: (d: { field: string, value: number | string }) =>
+    post(`/api/v2/game/chu3/user-detail-set`, d),
 }
 
 export const CARD = {

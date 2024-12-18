@@ -4,7 +4,6 @@
   import {
     UserBoxItemKind,
     type AquaNetUser,
-    type ChangeUserBoxReq,
   } from "../libs/generalTypes";
   import { USER, USERBOX } from "../libs/sdk";
   import { t, ts } from "../libs/i18n";
@@ -15,7 +14,6 @@
   import Icon from "@iconify/svelte";
 
   let user: AquaNetUser;
-  let aimeId = "";
   let loading = true;
   let error = "";
   let submitting = "";
@@ -137,28 +135,20 @@
     back: undefined,
   } as Record<string, number | undefined>;
 
-  function submit(body: ChangeUserBoxReq, field: string) {
-    if (submitting) return;
-    submitting = body.kind;
+  function submit(obj: { field: string; value: string }) {
+    if (submitting) return
+    submitting = obj.field
 
-    USERBOX.setUserBox(body)
-      .then(() => {
-        changed = changed.filter((c) => c !== field);
-      })
-      .catch((e) => {
-        error = e.message;
-        submitting = "";
-      })
-      .finally(() => {
-        submitting = "";
-      });
+    USERBOX.setUserBox(obj)
+      .then(() => changed = changed.filter((c) => c !== obj.field))
+      .catch(e => error = e.message)
+      .finally(() => submitting = "")
   }
 
   async function fetchData() {
-    const currentValues = await USERBOX.getProfile(aimeId).catch((e) => {
+    const currentValues = await USERBOX.getProfile().catch((e) => {
       loading = false;
       error = t("userbox.error.noprofile")
-      return;
     });
 
     if(!currentValues) return;
@@ -189,7 +179,7 @@
     await Promise.all(
       userBoxItems.map(async (kind) => {
         // Populate info about the items
-        return USERBOX.getUnlockedItems(aimeId, kind).then((items) => {
+        return USERBOX.getUnlockedItems(kind).then((items) => {
           switch (kind) {
             case UserBoxItemKind.nameplate:
               // Add the item id and the label to the available options
@@ -291,65 +281,22 @@
     loading = false;
   }
 
+  const kindMap: Record<string, string> =
+    { nameplate: "nameplateId", frame: "frameId", trophy: "trophyId", mapicon: "mapIconId", voice: "voiceId" }
+  const categories = ["wear", "head", "face", "skin", "item", "front", "back"]
   function generateBodyFromKind(
-    kind:
-      | "frame"
-      | "nameplate"
-      | "trophy"
-      | "mapicon"
-      | "voice"
-      | "wear"
-      | "head"
-      | "face"
-      | "skin"
-      | "item"
-      | "front"
-      | "back",
+    kind: "frame" | "nameplate" | "trophy" | "mapicon" | "voice" | "wear" | "head" | "face" | "skin" | "item" | "front" | "back",
     value: number,
-    aimeId: string,
-  ): ChangeUserBoxReq {
-    switch (kind) {
-      case "frame":
-        return { kind: "frame", frameId: value, aimeId };
-      case "nameplate":
-        return { kind: "plate", nameplateId: value, aimeId };
-      case "trophy":
-        return { kind: "trophy", trophyId: value, aimeId };
-      case "mapicon":
-        return { kind: "mapicon", mapiconid: value, aimeId };
-      case "voice":
-        return { kind: "sysvoice", voiceId: value, aimeId };
-      case "wear":
-        return { kind: "avatar", accId: value, category: 1, aimeId };
-      case "head":
-        return { kind: "avatar", accId: value, category: 2, aimeId };
-      case "face":
-        return { kind: "avatar", accId: value, category: 3, aimeId };
-      case "skin":
-        return { kind: "avatar", accId: value, category: 4, aimeId };
-      case "item":
-        return { kind: "avatar", accId: value, category: 5, aimeId };
-      case "front":
-        return { kind: "avatar", accId: value, category: 6, aimeId };
-      case "back":
-        return { kind: "avatar", accId: value, category: 7, aimeId };
-    }
+  ) {
+    if (kind in kindMap) return { field: kindMap[kind], value: `${value}` }
+    return { field: "avatar", value: `${categories.indexOf(kind) + 1}:${value}` }
   }
 
-  USER.me().then((u) => {
-    if (u) {
-      user = u;
-      const card = user.cards.length > 0 ? user.cards[0].luid : "";
-
-      aimeId = card;
-
-      if (aimeId) {
-        fetchData();
-      } else {
-        loading = false;
-      }
-    }
-  });
+  USER.me().then(u => {
+    if (!u) throw new Error(t("userbox.error.noprofile"))
+    user = u
+    fetchData()
+  }).catch((e) => { loading = false; error = e.message });
 </script>
 
 {#if !loading && !error}
@@ -402,7 +349,7 @@
 
                       if (newValue === undefined) return;
 
-                      submit(generateBodyFromKind(key, newValue, aimeId), key);
+                      submit(generateBodyFromKind(key, newValue));
                     }}
                   >
                     {#if submitting === key}
@@ -547,8 +494,8 @@
 
                 &.active
                     color: $c-main
-  
-    img 
+
+    img
         width: 100%
         height: auto
 
@@ -596,12 +543,12 @@
                 img
                     width: auto
                     height: 100%
-                
+
 
         .nameplate
             position: relative
             width: 400px
-            
+
             > .trophy
                 position: absolute
                 top: 10px
@@ -646,28 +593,28 @@
       gap: 12px
       width: 100%
       flex-grow: 0
-  
+
       label
         display: flex
         flex-direction: column
 
       select
         width: 100%
-  
+
     .field
       display: flex
       flex-direction: column
       width: 100%
-  
+
       label
         max-width: max-content
-  
+
       > div:not(.bool)
         display: flex
         align-items: center
         gap: 1rem
         margin-top: 0.5rem
-  
+
         > select
           flex: 1
 

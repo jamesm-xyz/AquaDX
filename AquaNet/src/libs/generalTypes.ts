@@ -173,18 +173,4 @@ export enum UserBoxItemKind {
 }
 
 // Define type only with the keys
-export type UserBoxItemKindStr = keyof typeof UserBoxItemKind;
-
-type ChangePlateReq = {kind:'plate', nameplateId:number}
-type ChangeFrameReq = {kind:'frame', frameId:number}
-type ChangeTrophyReq = {kind:'trophy',trophyId:number}
-type ChangeMapIconReq = {kind:'mapicon',mapiconid:number}
-type ChangeVoiceReq = {kind:'sysvoice',voiceId:number}
-type ChangeAvatarReq = {
-  kind:'avatar',
-  accId:number,
-  category:number
-}
-
-export type ChangeUserBoxReq = {aimeId:string} & (ChangePlateReq | ChangeFrameReq | ChangeTrophyReq | ChangeMapIconReq | ChangeVoiceReq | ChangeAvatarReq);
-
+export type UserBoxItemKindStr = keyof typeof UserBoxItemKind
