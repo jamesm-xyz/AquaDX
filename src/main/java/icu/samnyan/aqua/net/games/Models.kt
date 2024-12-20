@@ -91,7 +91,7 @@ interface IUserData {
     val lastRomVersion: String
     val totalScore: Long
     var card: Card?
-    val lastClientId: String
+    val lastClientId: String?
 }
 
 interface IGenericGamePlaylog {

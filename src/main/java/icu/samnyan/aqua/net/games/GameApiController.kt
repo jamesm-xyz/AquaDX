@@ -158,7 +158,7 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
             lastVersion = user.lastRomVersion,
             ratingComposition = ratingComp,
             recent = plays.sortedBy { it.userPlayDate.toString() }.takeLast(15).reversed(),
-            lastPlayedHost = us.userRepo.findByKeychip(user.lastClientId)?.username,
+            lastPlayedHost = user.lastClientId?.let { us.userRepo.findByKeychip(it)?.username },
             rival = rival
         )
     }
