@@ -1,14 +1,14 @@
 package icu.samnyan.aqua.sega.chusan.model.userdata;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
 
 /**
  * @author samnyan (privateamusement@protonmail.com)
@@ -19,20 +19,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonPropertyOrder({"itemKind", "itemId", "stock", "isValid"})
-public class UserItem implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
-    private long id;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Chu3UserData user;
-
+public class UserItem extends Chu3UserEntity {
     // Kind ,Type
     @Column(name = "item_kind")
     private int itemKind;
@@ -46,6 +33,6 @@ public class UserItem implements Serializable {
     private boolean isValid = true;
 
     public UserItem(Chu3UserData userData) {
-        user = userData;
+        setUser(userData);
     }
 }

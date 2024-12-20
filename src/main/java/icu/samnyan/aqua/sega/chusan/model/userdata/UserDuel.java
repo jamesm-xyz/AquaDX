@@ -1,8 +1,10 @@
 package icu.samnyan.aqua.sega.chusan.model.userdata;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,18 +19,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDuel {
-
-    @Id
-    @JsonIgnore
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Chu3UserData user;
-
+public class UserDuel extends Chu3UserEntity {
     @Column(name = "duel_id")
     private int duelId;
 
@@ -50,6 +41,6 @@ public class UserDuel {
     private int param4;
 
     public UserDuel(Chu3UserData userData) {
-        user = userData;
+        setUser(userData);
     }
 }

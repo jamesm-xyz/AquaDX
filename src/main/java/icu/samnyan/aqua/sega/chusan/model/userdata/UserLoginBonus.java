@@ -1,12 +1,12 @@
 package icu.samnyan.aqua.sega.chusan.model.userdata;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import icu.samnyan.aqua.net.games.BaseEntity;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity(name = "ChusanUserLoginBonus")
@@ -14,11 +14,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserLoginBonus implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
-    private long id;
+public class UserLoginBonus extends BaseEntity {
     private int version;
     private int user;
     private int presetId;

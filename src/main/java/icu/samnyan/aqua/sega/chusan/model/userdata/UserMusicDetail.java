@@ -1,16 +1,16 @@
 package icu.samnyan.aqua.sega.chusan.model.userdata;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import icu.samnyan.aqua.sega.chusan.util.BooleanToIntegerDeserializer;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
 
 /**
  * @author samnyan (privateamusement@protonmail.com)
@@ -36,20 +36,7 @@ import java.io.Serializable;
         "theoryCount",
         "ext1"
 })
-public class UserMusicDetail implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
-    private long id;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Chu3UserData user;
-
+public class UserMusicDetail extends Chu3UserEntity {
     @Column(name = "music_id")
     private int musicId;
 
@@ -87,24 +74,6 @@ public class UserMusicDetail implements Serializable {
     private int ext1;
 
     public UserMusicDetail(Chu3UserData userData) {
-        user = userData;
-    }
-
-    public UserMusicDetail(int musicId, int level, int playCount, int scoreMax, int missCount, int maxComboCount, boolean isFullCombo, boolean isAllJustice, int isSuccess, int fullChain, int maxChain, int scoreRank, boolean isLock, int theoryCount, int ext1) {
-        this.musicId = musicId;
-        this.level = level;
-        this.playCount = playCount;
-        this.scoreMax = scoreMax;
-        this.missCount = missCount;
-        this.maxComboCount = maxComboCount;
-        this.isFullCombo = isFullCombo;
-        this.isAllJustice = isAllJustice;
-        this.isSuccess = isSuccess;
-        this.fullChain = fullChain;
-        this.maxChain = maxChain;
-        this.scoreRank = scoreRank;
-        this.isLock = isLock;
-        this.theoryCount = theoryCount;
-        this.ext1 = ext1;
+        setUser(userData);
     }
 }

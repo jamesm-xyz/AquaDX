@@ -1,13 +1,14 @@
 package icu.samnyan.aqua.sega.chusan.model.userdata;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -19,20 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonPropertyOrder({"chargeId", "stock", "purchaseDate", "validDate", "param1", "param2", "paramDate"})
-public class UserCharge implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
-    private long id;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Chu3UserData user;
-
+public class UserCharge extends Chu3UserEntity {
     @Column(name = "charge_id")
     private int chargeId;
 
@@ -49,6 +37,6 @@ public class UserCharge implements Serializable {
     private LocalDateTime paramDate;
 
     public UserCharge(Chu3UserData user) {
-        this.user = user;
+        setUser(user);
     }
 }

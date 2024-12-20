@@ -1,15 +1,14 @@
 package icu.samnyan.aqua.sega.chusan.model.userdata;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import icu.samnyan.aqua.net.games.IGenericGamePlaylog;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -20,20 +19,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserPlaylog implements Serializable, IGenericGamePlaylog {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Chu3UserData user;
-
+public class UserPlaylog extends Chu3UserEntity implements IGenericGamePlaylog {
     private String romVersion;
 
     private int orderId;
@@ -156,7 +142,7 @@ public class UserPlaylog implements Serializable, IGenericGamePlaylog {
     private int ticketId;
 
     public UserPlaylog(Chu3UserData userData) {
-        user = userData;
+        setUser(userData);
     }
 
     @Override

@@ -1,13 +1,11 @@
 package icu.samnyan.aqua.sega.chusan.model.userdata;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
 
 /**
  * @author samnyan (privateamusement@protonmail.com)
@@ -69,19 +67,7 @@ import java.io.Serializable;
     "ext9",
     "ext10"
 })
-public class UserGameOption implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @JsonIgnore
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Chu3UserData user;
+public class UserGameOption extends Chu3UserEntity {
 
     private int bgInfo;
 
@@ -184,6 +170,6 @@ public class UserGameOption implements Serializable {
     private int ext10;
 
     public UserGameOption(Chu3UserData userData) {
-        user = userData;
+        setUser(userData);
     }
 }
