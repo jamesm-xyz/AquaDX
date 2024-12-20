@@ -131,7 +131,7 @@ class Chu3UserData : BaseEntity(), IUserData {
 
     @JsonInclude
     @Transient
-    var rankUpChallengeResults: List<Any> = emptyList()
+    var rankUpChallengeResults: List<Any>? = null
 
     // When serialized, this field should be "isNetBattleHost", not "netBattleHost"
     @JsonProperty("isNetBattleHost")
