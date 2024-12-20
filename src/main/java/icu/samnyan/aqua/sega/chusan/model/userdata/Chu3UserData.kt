@@ -3,7 +3,6 @@ package icu.samnyan.aqua.sega.chusan.model.userdata
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import icu.samnyan.aqua.net.games.BaseEntity
 import icu.samnyan.aqua.net.games.IUserData
@@ -134,6 +133,7 @@ class Chu3UserData : BaseEntity(), IUserData {
     @Transient
     var rankUpChallengeResults: List<Any> = emptyList()
 
+    // When serialized, this field should be "isNetBattleHost", not "netBattleHost"
     @JsonProperty("isNetBattleHost")
     var isNetBattleHost = false
     var netBattleEndState = 0
