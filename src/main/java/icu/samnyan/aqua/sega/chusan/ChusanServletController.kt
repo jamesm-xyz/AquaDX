@@ -2,12 +2,12 @@ package icu.samnyan.aqua.sega.chusan
 
 import ext.*
 import icu.samnyan.aqua.net.utils.simpleDescribe
-import icu.samnyan.aqua.sega.chunithm.handler.impl.GetGameIdlistHandler
 import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.general.BaseHandler
+import icu.samnyan.aqua.sega.util.jackson.StringMapper
 import icu.samnyan.aqua.spring.Metrics
 import org.slf4j.LoggerFactory
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.RestController
 import kotlin.reflect.full.declaredMemberProperties
 
 /**
@@ -21,11 +21,7 @@ class ChusanServletController(
     val gameLogout: GameLogoutHandler,
     val getGameCharge: GetGameChargeHandler,
     val getGameEvent: GetGameEventHandler,
-    val getGameIdlist: GetGameIdlistHandler,
-    val getGameRanking: GetGameRankingHandler,
     val getGameSetting: GetGameSettingHandler,
-    val getTeamCourseRule: GetTeamCourseRuleHandler,
-    val getTeamCourseSetting: GetTeamCourseSettingHandler,
     val getUserActivity: GetUserActivityHandler,
     val getUserCharacter: GetUserCharacterHandler,
     val getUserCharge: GetUserChargeHandler,
@@ -69,10 +65,16 @@ class ChusanServletController(
     // Luminous
     val getUserCMission: GetUserCMissionHandler,
     val getUserNetBattleRankingInfo: GetUserNetBattleRankingInfoHandler,
-    val getGameMapAreaCondition: GetGameMapAreaConditionHandler
+    val getGameMapAreaCondition: GetGameMapAreaConditionHandler,
+
+    val mapper: StringMapper
 ) {
     val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
 
+    val getGameRanking = BaseHandler { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
+    val getGameIdlist = BaseHandler { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
+    val getTeamCourseSetting = BaseHandler { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseSettingList":[]}""" }
+    val getTeamCourseRule = BaseHandler { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseRuleList":[]}""" }
     val getUserCtoCPlay = BaseHandler { """{"userId":"${it["userId"]}","orderBy":"0","count":"0","userCtoCPlayList":[]}""" }
     val cmUpsertUserPrint = BaseHandler { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintApi"}""" }
     val cmUpsertUserPrintlog = BaseHandler { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintlogApi"}""" }
@@ -121,24 +123,24 @@ class ChusanServletController(
         }
         if (api in matchingEndpoints) api = "MatchingServer/$api"
 
-        logger.info("Chu3 $api : $request")
         if (api !in noopEndpoint && !handlers.containsKey(api)) {
-            logger.warn("Chu3 $api not found")
+            logger.warn("Chu3 > $api not found")
             return """{"returnCode":"1","apiName":"$api"}"""
         }
 
         // Only record the counter metrics if the API is known.
         Metrics.counter("aquadx_chusan_api_call", "api" to api).increment()
-
         if (api in noopEndpoint) {
+            logger.info("Chu3 > $api no-op")
             return """{"returnCode":"1"}"""
         }
+        logger.info("Chu3 > $api : $request")
 
         return try {
             Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
-                handlers[api]?.handle(request) ?: {
-                    logger.warn("Chu3 $api not found")
-                    """{"returnCode":"1","apiName":"$api"}"""
+                handlers[api]!!.handle(request).let { if (it is String) it else mapper.write(it) }.also {
+                    if (api !in setOf("GetUserItemApi", "GetGameEventApi"))
+                        logger.info("Chu3 > $api : $it")
                 }
             }
         } catch (e: Exception) {
