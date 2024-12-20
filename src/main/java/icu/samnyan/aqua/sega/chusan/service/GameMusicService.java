@@ -42,12 +42,4 @@ public class GameMusicService {
         getAll().forEach(music -> musicMap.put(music.getMusicId(), music));
         return musicMap;
     }
-
-    public Optional<Music> getById(String musicId) {
-        return getById(Integer.parseInt(musicId));
-    }
-
-    public Optional<Music> getById(int musicId) {
-        return gameMusicRepository.findByMusicId(musicId);
-    }
 }

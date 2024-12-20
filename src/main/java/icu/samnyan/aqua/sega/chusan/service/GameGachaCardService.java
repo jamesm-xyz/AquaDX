@@ -28,10 +28,6 @@ public class GameGachaCardService {
         return gameGachaCardRepository.findAll();
     }
 
-    public List<GameGachaCard> getByGachaId(int gachaId) {
-        return gameGachaCardRepository.findAllByGachaId(gachaId);
-    }
-
     public List<GameGachaCard> getRandomCards(int gachaId, int times) {
         List<GameGachaCard> gachaCards = gameGachaCardRepository.findAllByGachaId(gachaId);
         List<GameGachaCard> randomCards = new ArrayList<>();

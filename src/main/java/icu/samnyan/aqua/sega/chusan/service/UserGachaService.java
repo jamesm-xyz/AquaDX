@@ -31,9 +31,4 @@ public class UserGachaService {
     public List<UserGacha> getByUserId(String userId) {
         return userGachaRepository.findByUser_Card_ExtId(Long.parseLong(userId));
     }
-
-    public Optional<UserGacha> getByUserAndGachaId(Chu3UserData user, int gachaId) {
-        return userGachaRepository.findByUserAndGachaId(user, gachaId);
-    }
-
 }
