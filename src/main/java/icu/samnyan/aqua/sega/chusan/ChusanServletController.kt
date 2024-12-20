@@ -50,7 +50,7 @@ class ChusanServletController(
     val getGameMapAreaCondition: GetGameMapAreaConditionHandler,
 
     val mapper: StringMapper,
-    val repos: Chu3Repos,
+    val db: Chu3Repos,
 ) {
     val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
 
@@ -162,32 +162,32 @@ fun ChusanServletController.init() {
 
     // User handlers
     "GetUserData" user { _, u ->
-        val user = repos.userData.findByCard_ExtId(u)() ?: (400 - "User not found")
+        val user = db.userData.findByCard_ExtId(u)() ?: (400 - "User not found")
         mapOf("userId" to u, "userData" to user)
     }
     "GetUserOption" user { _, u ->
-        val userGameOption = repos.userGameOption.findSingleByUser_Card_ExtId(u)() ?: (400 - "User not found")
+        val userGameOption = db.userGameOption.findSingleByUser_Card_ExtId(u)() ?: (400 - "User not found")
         mapOf("userId" to u, "userGameOption" to userGameOption)
     }
     "GetUserActivity" user { req, u ->
         val kind = parsing { req["kind"]!!.int }
-        val a = repos.userActivity.findAllByUser_Card_ExtIdAndKind(u, kind).sortedBy { it.sortNumber }
+        val a = db.userActivity.findAllByUser_Card_ExtIdAndKind(u, kind).sortedBy { it.sortNumber }
         mapOf("userId" to u, "length" to a.size, "kind" to kind, "userActivityList" to a)
     }
-    "GetUserCharge" user { _, u -> repos.userCharge.findByUser_Card_ExtId(u)
+    "GetUserCharge" user { _, u -> db.userCharge.findByUser_Card_ExtId(u)
         .let { mapOf("userId" to u, "length" to it.size, "userChargeList" to it) }
     }
-    "GetUserDuel" user { _, u -> repos.userDuel.findByUser_Card_ExtId(u)
+    "GetUserDuel" user { _, u -> db.userDuel.findByUser_Card_ExtId(u)
         .let { mapOf("userId" to u, "length" to it.size, "userDuelList" to it) }
     }
 
     // Other handlers
-    "GetGameGachaCardById" { repos.gameGachaCard.findAllByGachaId(parsing { it["gachaId"]!!.int }).let {
+    "GetGameGachaCardById" { db.gameGachaCard.findAllByGachaId(parsing { it["gachaId"]!!.int }).let {
         mapOf("gachaId" to it.size, "length" to it.size, "isPickup" to false, "gameGachaCardList" to it, "emissionList" to empty, "afterCalcList" to empty)
     } }
 
     // Static
-    "GetGameEvent" static { repos.gameEvent.findByEnable(true).let { mapOf("type" to 1, "length" to it.size, "gameEventList" to it) } }
-    "GetGameCharge" static { repos.gameCharge.findAll().let { mapOf("length" to it.size, "gameChargeList" to it) } }
-    "GetGameGacha" static { repos.gameGacha.findAll().let { mapOf("length" to it.size, "gameGachaList" to it, "registIdList" to empty) } }
+    "GetGameEvent" static { db.gameEvent.findByEnable(true).let { mapOf("type" to 1, "length" to it.size, "gameEventList" to it) } }
+    "GetGameCharge" static { db.gameCharge.findAll().let { mapOf("length" to it.size, "gameChargeList" to it) } }
+    "GetGameGacha" static { db.gameGacha.findAll().let { mapOf("length" to it.size, "gameGachaList" to it, "registIdList" to empty) } }
 }
