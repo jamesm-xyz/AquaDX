@@ -13,7 +13,7 @@
 <div class="rank-detail-container fw-block" transition:slide>
   <div>
     <h2>{t("UserHome.RankDetail.Title")}</h2>
-    <table>
+    <table><tbody>
       <!-- rankDetails: { Level : { Rank : Count } } -->
       <!-- Rows are levels, columns are ranks -->
 
@@ -30,7 +30,7 @@
           {#each Object.values(rankMap) as count}<td>{count}</td>{/each}
         </tr>
       {/each}
-    </table>
+    </tbody></table>
   </div>
 </div>
 
