@@ -119,6 +119,7 @@ class ChusanServletController(
             api = api.removeSuffix("C3Exp")
             request["c3exp"] = true
         }
+        if (api in matchingEndpoints) api = "MatchingServer/$api"
 
         logger.info("Chu3 $api : $request")
         if (api !in noopEndpoint && !handlers.containsKey(api)) {
