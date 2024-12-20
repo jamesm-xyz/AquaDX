@@ -15,7 +15,7 @@ Below is a list of games supported by this server.
 
 | Game                       | Ver  | Codename      | Thanks to                                  |
 |----------------------------|------|---------------|--------------------------------------------|
-| SDHD: CHUNITHM (Chusan)    | 2.20 | LUMINOUS      | [@rinsama](https://github.com/mxihan)      |
+| SDHD: CHUNITHM (Chusan)    | 2.27 | LUMINOUS PLUS | [@rinsama](https://github.com/mxihan)      |
 | SDEZ: MaiMai DX            | 1.40 | BUDDiES       | [@肥宅虾哥](https://github.com/FeiZhaixiage)   |
 | SDGA: MaiMai DX (International) | 1.45 | BUDDiES PLUS | [@Clansty](https://github.com/clansty)   |
 | SDED: Card Maker           | 1.39 |               | [@Becods](https://github.com/Becods)       |
