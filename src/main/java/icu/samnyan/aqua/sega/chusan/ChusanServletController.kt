@@ -3,13 +3,21 @@ package icu.samnyan.aqua.sega.chusan
 import ext.*
 import icu.samnyan.aqua.net.utils.simpleDescribe
 import icu.samnyan.aqua.sega.chusan.handler.*
+import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
 import icu.samnyan.aqua.sega.general.BaseHandler
+import icu.samnyan.aqua.sega.maimai2.handler.UserReqHandler
 import icu.samnyan.aqua.sega.util.jackson.StringMapper
+import icu.samnyan.aqua.sega.wacca.empty
 import icu.samnyan.aqua.spring.Metrics
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.RestController
 import kotlin.collections.set
 import kotlin.reflect.full.declaredMemberProperties
+
+fun interface Chu3UserHandler : BaseHandler {
+    override fun handle(request: Map<String, Any>) = handleThis(request, parsing { request["userId"]?.long })
+    fun handleThis(request: Map<String, Any>, extId: Long?): Any
+}
 
 /**
  * @author samnyan (privateamusement@protonmail.com)
@@ -19,10 +27,7 @@ import kotlin.reflect.full.declaredMemberProperties
 @API(value = ["/g/chu3/{version}/ChuniServlet", "/g/chu3/{version}"])
 class ChusanServletController(
     val gameLogin: GameLoginHandler,
-    val getGameCharge: GetGameChargeHandler,
-    val getGameEvent: GetGameEventHandler,
     val getGameSetting: GetGameSettingHandler,
-    val getUserActivity: GetUserActivityHandler,
     val getUserCharacter: GetUserCharacterHandler,
     val getUserCharge: GetUserChargeHandler,
     val getUserCourse: GetUserCourseHandler,
@@ -39,8 +44,6 @@ class ChusanServletController(
     val getUserTeam: GetUserTeamHandler,
     val upsertUserAll: UpsertUserAllHandler,
     val upsertUserChargelog: UpsertUserChargelogHandler,
-    val getGameGacha: GetGameGachaHandler,
-    val getGameGachaCardById: GetGameGachaCardByIdHandler,
     val getUserCardPrintError: GetUserCardPrintErrorHandler,
     val cmGetUserPreview: CMGetUserPreviewHandler,
     val cmGetUserData: CMGetUserDataHandler,
@@ -57,9 +60,14 @@ class ChusanServletController(
     val getUserCMission: GetUserCMissionHandler,
     val getGameMapAreaCondition: GetGameMapAreaConditionHandler,
 
-    val mapper: StringMapper
+    val mapper: StringMapper,
+    val repos: Chu3Repos,
 ) {
+    fun static(o: Any) = mapper.write(o).let { resp -> BaseHandler { resp } }
+
     val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
+    val events = resJson<List<Map<Str, Int>>>("/static/chusan_game_event.json")!!.filter { it["enable"].truthy }
+        .map { it.filterKeys { it != "enable" } + mapOf("startDate" to "2019-01-01 00:00:00", "endDate" to "2029-01-01 00:00:00") }
 
     val getGameRanking = BaseHandler { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
     val getGameIdlist = BaseHandler { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
@@ -82,6 +90,22 @@ class ChusanServletController(
     val endMatching = BaseHandler { """{"matchingResult":{"matchingMemberInfoList":[],"matchingMemberRoleList":[],"reflectorUri":""}}""" }
     val getMatchingState = BaseHandler { """{"matchingWaitState":{"restMSec":"30000","pollingInterval":"10","matchingMemberInfoList":[],"isFinish":"true"}}""" }
 
+    // Actual handlers
+    val getUserActivity = UserReqHandler { req, u ->
+        val kind = parsing { req["kind"]!!.int }
+        val a = repos.userActivity.findAllByUser_Card_ExtIdAndKind(u, kind).sortedBy { it.sortNumber }
+        mapOf("userId" to u, "length" to a.size, "kind" to kind, "userActivityList" to a)
+    }
+    val getGameEvent = static(mapOf("type" to 1, "length" to events.size, "gameEventList" to events))
+    val getGameCharge = static(repos.gameCharge.findAll().let { mapOf("length" to it.size, "gameChargeList" to it) })
+    val getGameGacha = static(repos.gameGacha.findAll()
+        .let { mapOf("length" to it.size, "gameGachaList" to it, "registIdList" to empty) }
+    )
+    val getGameGachaCardById = BaseHandler {
+        val id = parsing { it["gachaId"]!!.int }
+        val cards = repos.gameGachaCard.findAllByGachaId(id)
+        mapOf("gachaId" to id, "length" to cards.size, "isPickup" to false, "gameGachaCardList" to cards, "emissionList" to empty, "afterCalcList" to empty)
+    }
 
     // Below are code related to handling the handlers
     val endpointList = mutableListOf(

@@ -44,6 +44,7 @@ interface Chu3UserActivityRepo : Chu3UserLinked<UserActivity> {
     fun findTopByUserAndActivityIdAndKindOrderByIdDesc(user: Chu3UserData, activityId: Int, kind: Int): Optional<UserActivity>
 
     fun findAllByUser_Card_ExtIdAndKindOrderBySortNumberDesc(extId: Long, kind: Int): List<UserActivity>
+    fun findAllByUser_Card_ExtIdAndKind(extId: Long, kind: Int): List<UserActivity>
 }
 
 interface Chu3UserCardPrintStateRepo : Chu3UserLinked<UserCardPrintState> {
