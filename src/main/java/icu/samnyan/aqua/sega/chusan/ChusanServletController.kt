@@ -108,7 +108,7 @@ class ChusanServletController(
             ?: throw IllegalArgumentException("Chu3: No handler found for $api")
     }
 
-    @API("/{endpoint}")
+    @API("/{endpoint}", "/MatchingServer/{endpoint}")
     fun handle(@PV endpoint: Str, @RB request: MutableMap<Str, Any>, @PV version: Str): Any {
         var api = endpoint
         request["version"] = version
