@@ -5,7 +5,6 @@ import icu.samnyan.aqua.net.utils.simpleDescribe
 import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
 import icu.samnyan.aqua.sega.general.BaseHandler
-import icu.samnyan.aqua.sega.maimai2.handler.UserReqHandler
 import icu.samnyan.aqua.sega.util.jackson.StringMapper
 import icu.samnyan.aqua.sega.wacca.empty
 import icu.samnyan.aqua.spring.Metrics
@@ -14,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController
 import kotlin.collections.set
 import kotlin.reflect.full.declaredMemberProperties
 
-fun interface Chu3UserHandler : BaseHandler {
-    override fun handle(request: Map<String, Any>) = handleThis(request, parsing { request["userId"]?.long })
-    fun handleThis(request: Map<String, Any>, extId: Long?): Any
+fun interface WithUser : BaseHandler {
+    override fun handle(request: Map<String, Any>) = handleThis(request, parsing { request["userId"]!!.long })
+    fun handleThis(request: Map<String, Any>, extId: Long): Any
 }
 
 /**
@@ -29,16 +28,12 @@ class ChusanServletController(
     val gameLogin: GameLoginHandler,
     val getGameSetting: GetGameSettingHandler,
     val getUserCharacter: GetUserCharacterHandler,
-    val getUserCharge: GetUserChargeHandler,
     val getUserCourse: GetUserCourseHandler,
-    val getUserData: GetUserDataHandler,
-    val getUserDuel: GetUserDuelHandler,
     val getUserFavoriteItem: GetUserFavoriteItemHandler,
     val getUserItem: GetUserItemHandler,
     val getUserLoginBonus: GetUserLoginBonusHandler,
     val getUserMapArea: GetUserMapAreaHandler,
     val getUserMusic: GetUserMusicHandler,
-    val getUserOption: GetUserOptionHandler,
     val getUserPreview: GetUserPreviewHandler,
     val getUserRecentRating: GetUserRecentRatingHandler,
     val getUserTeam: GetUserTeamHandler,
@@ -91,10 +86,24 @@ class ChusanServletController(
     val getMatchingState = BaseHandler { """{"matchingWaitState":{"restMSec":"30000","pollingInterval":"10","matchingMemberInfoList":[],"isFinish":"true"}}""" }
 
     // Actual handlers
-    val getUserActivity = UserReqHandler { req, u ->
+    val getUserData = WithUser { _, u ->
+        val user = repos.userData.findByCard_ExtId(u)() ?: (400 - "User not found")
+        mapOf("userId" to u, "userData" to user)
+    }
+    val getUserOption = WithUser { _, u ->
+        val userGameOption = repos.userGameOption.findSingleByUser_Card_ExtId(u)() ?: (400 - "User not found")
+        mapOf("userId" to u, "userGameOption" to userGameOption)
+    }
+    val getUserActivity = WithUser { req, u ->
         val kind = parsing { req["kind"]!!.int }
         val a = repos.userActivity.findAllByUser_Card_ExtIdAndKind(u, kind).sortedBy { it.sortNumber }
         mapOf("userId" to u, "length" to a.size, "kind" to kind, "userActivityList" to a)
+    }
+    val getUserCharge = WithUser { _, u -> repos.userCharge.findByUser_Card_ExtId(u)
+        .let { mapOf("userId" to u, "length" to it.size, "userChargeList" to it) }
+    }
+    val getUserDuel = WithUser { _, u -> repos.userDuel.findByUser_Card_ExtId(u)
+        .let { mapOf("userId" to u, "length" to it.size, "userDuelList" to it) }
     }
     val getGameEvent = static(mapOf("type" to 1, "length" to events.size, "gameEventList" to events))
     val getGameCharge = static(repos.gameCharge.findAll().let { mapOf("length" to it.size, "gameChargeList" to it) })

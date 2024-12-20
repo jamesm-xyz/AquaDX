@@ -34,10 +34,6 @@ public class UserActivityService {
         return userActivityRepository.findTopByUserAndActivityIdAndKindOrderByIdDesc(user, activityId, kind);
     }
 
-    public List<UserActivity> getAllByUserIdAndKind(String userId, String kind) {
-        return userActivityRepository.findAllByUser_Card_ExtIdAndKindOrderBySortNumberDesc(Long.parseLong(userId), Integer.parseInt(kind));
-    }
-
     public List<UserActivity> getByUserId(String userId) {
         return userActivityRepository.findByUser_Card_ExtId(Long.parseLong(userId));
     }
