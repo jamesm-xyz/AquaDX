@@ -66,19 +66,19 @@
 
 <style lang="sass">
 
-  @import "../vars"
-  $gap: 20px
+  @use "../vars"
+  vars.$gap: 20px
 
   .map-detail-container
     background-color: rgb(35,35,35)
-    border-radius: $border-radius
+    border-radius: vars.$border-radius
     overflow: hidden
 
     .scores
       display: flex
       flex-direction: column
       flex-wrap: wrap
-      gap: $gap
+      gap: vars.$gap
 
       // Image and song info
       > div
@@ -91,7 +91,7 @@
         img
           width: 50px
           height: 50px
-          border-radius: $border-radius
+          border-radius: vars.$border-radius
           object-fit: cover
 
         // Song info and score
@@ -118,7 +118,7 @@
           > div:last-child
             white-space: nowrap
 
-          @media (max-width: $w-mobile)
+          @media (max-width: vars.$w-mobile)
             flex-direction: column
             gap: 0
 
@@ -127,7 +127,7 @@
 
         .rank-S
           // Gold green gradient on text
-          background: $grad-special
+          background: vars.$grad-special
           -webkit-background-clip: text
           color: transparent
 
@@ -142,7 +142,7 @@
           text-align: center
           background: rgba(var(--lv-color), 0.6)
           padding: 0 6px
-          border-radius: 0 $border-radius 0 $border-radius
+          border-radius: 0 vars.$border-radius 0 vars.$border-radius
 
           // Inset shadow, like it's a paper below this card with a cut
           box-shadow: inset 0 0 10px rgba(0,0,0,0.5)
@@ -163,5 +163,5 @@
           min-width: 60px
         span.dx-change
           margin-right: 0.5rem
-          color: $c-good
+          color: vars.$c-good
 </style>

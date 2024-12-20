@@ -1,11 +1,12 @@
-@import "vars"
+@use "sass:color"
+@use "vars"
 @import 'lxgw-wenkai-lite-webfont/style.css'
 
 html
   height: 100%
 
 body
-  font-family: $font
+  font-family: vars.$font
   line-height: 1.5
   font-weight: 400
   width: 100%
@@ -15,7 +16,7 @@ body
 
   color-scheme: dark
   color: rgba(255, 255, 255, 0.87)
-  background-color: $c-bg
+  background-color: vars.$c-bg
 
   font-synthesis: none
   text-rendering: optimizeLegibility
@@ -24,11 +25,11 @@ body
 
 a
   font-weight: 500
-  color: $c-main
+  color: vars.$c-main
   text-decoration: inherit
 
 a:hover
-  color: $c-main
+  color: vars.$c-main
 
 h1
   font-size: 3.2em
@@ -39,9 +40,9 @@ h1
   display: flex
   flex-direction: column
 
-  border-radius: $border-radius
+  border-radius: vars.$border-radius
   padding: 12px 16px
-  background: $ov-light
+  background: vars.$ov-light
 
 
 blockquote
@@ -51,7 +52,7 @@ blockquote
   padding: 10px 20px 10px 20px
   margin: 16px 0
   border-left: solid #ff7c7c 3px
-  border-radius: $border-radius
+  border-radius: vars.$border-radius
 
 
 #app
@@ -67,29 +68,29 @@ main:not(.no-margin)
 
 
 button
-  border-radius: $border-radius
+  border-radius: vars.$border-radius
   border: 1px solid transparent
   padding: 0.6em 1.2em
   font-size: 1em
   font-weight: 500
   font-family: inherit
-  background-color: $ov-lighter
+  background-color: vars.$ov-lighter
   opacity: 0.9
   cursor: pointer
-  transition: $transition
+  transition: vars.$transition
 
 button:hover
-  border-color: $c-main
+  border-color: vars.$c-main
 
 button:focus, button:focus-visible
-  color: $c-main
+  color: vars.$c-main
   outline: none
 
 button.error
   color: unset
   &:hover
-    border-color: $c-error
-    color: $c-error
+    border-color: vars.$c-error
+    color: vars.$c-error
     //background: $c-error
     //border-color: transparent
 
@@ -120,29 +121,29 @@ button.icon
   --lv-color: 194, 153, 231
 
 .error
-  color: $c-error
+  color: vars.$c-error
 
 input
-  border-radius: $border-radius
+  border-radius: vars.$border-radius
   border: 1px solid transparent
   padding: 0.6em 1.2em
   font-size: 1em
   font-weight: 500
   font-family: inherit
-  background-color: $ov-lighter
-  transition: $transition
+  background-color: vars.$ov-lighter
+  transition: vars.$transition
   box-sizing: border-box
 
 // Dropdown
 select
-  border-radius: $border-radius
+  border-radius: vars.$border-radius
   border: 1px solid transparent
   padding: 0.6em 1.2em
   font-size: 1em
   font-weight: 500
   font-family: inherit
-  background-color: $ov-lighter
-  transition: $transition
+  background-color: vars.$ov-lighter
+  transition: vars.$transition
   box-sizing: border-box
 
   option
@@ -157,25 +158,25 @@ input[type="checkbox"]
   height: 1.2em
   margin: 0
   padding: 0
-  border: 1px solid $c-main
-  background-color: $ov-lighter
+  border: 1px solid vars.$c-main
+  background-color: vars.$ov-lighter
   appearance: none
   cursor: pointer
   flex-shrink: 0
 
   &:checked
-    background-color: $c-main
-    border-color: $c-main
+    background-color: vars.$c-main
+    border-color: vars.$c-main
 
 label
   cursor: pointer
 
 input:focus, input:focus-visible
-  border: 1px solid $c-main
+  border: 1px solid vars.$c-main
   outline: none
 
 input.error
-  border: 1px solid $c-error
+  border: 1px solid vars.$c-error
 
 .flex-center
   display: flex
@@ -201,30 +202,30 @@ input.error
   margin: 100px auto 0
   padding: 32px 32px 128px
   min-height: 100%
-  max-width: $w-max
+  max-width: vars.$w-max
 
-  background-color: darken($c-bg, 3%)
+  background-color: color.adjust(vars.$c-bg, $lightness: -3%)
   border-radius: 16px 16px 0 0
 
-  @media (max-width: #{$w-max + (64px) * 2})
+  @media (max-width: #{vars.$w-max + (64px) * 2})
     margin: 100px 32px 0
 
-  @media (max-width: $w-mobile)
+  @media (max-width: vars.$w-mobile)
     margin: 100px 0 0
 
   .fw-block
     margin-left: -32px
     margin-right: -32px
     padding: 12px 32px
-    background-color: $ov-darker
+    background-color: vars.$ov-darker
     // Inner shadow
-    box-shadow: inset 0 10px 10px -2px $c-shadow, inset 0 -10px 10px -2px $c-shadow
+    box-shadow: inset 0 10px 10px -2px vars.$c-shadow, inset 0 -10px 10px -2px vars.$c-shadow
 
   > h2.outer-title, > .outer-title-options
     margin-top: -5rem
     margin-bottom: 1rem
 
-    @media (max-width: $w-mobile)
+    @media (max-width: vars.$w-mobile)
       text-align: center
 
   > .outer-title-options
@@ -238,7 +239,7 @@ input.error
       gap: 10px
       top: 4px
 
-    @media (max-width: $w-mobile)
+    @media (max-width: vars.$w-mobile)
       flex-direction: column
 
   > h2, > .outer-title-options > h2
@@ -257,15 +258,15 @@ main.content
     position: absolute
     inset: 0
     top: 100px
-    background: rgba(darken($c-bg, 3%), 0.9)
+    background: rgba(color.adjust(vars.$c-bg, $lightness: -3%), 0.9)
     backdrop-filter: blur(5px)
     box-shadow: 0 0 10px 6px rgba(black, 0.4)
-    max-width: calc($w-max + 20px)
+    max-width: calc(vars.$w-max + 20px)
 
-    @media (max-width: #{$w-max + (64px) * 2})
+    @media (max-width: #{vars.$w-max + (64px) * 2})
       margin: 100px 22px 0
 
-    @media (max-width: $w-mobile)
+    @media (max-width: vars.$w-mobile)
       margin: 100px 0 0
 
 
@@ -289,9 +290,9 @@ main.content
     margin: 0
 
   > div
-    background-color: $c-bg
+    background-color: vars.$c-bg
     padding: 2rem
-    border-radius: $border-radius
+    border-radius: vars.$border-radius
 
     display: flex
     flex-direction: column
@@ -305,7 +306,7 @@ main.content
 nav
   > div, > a
     cursor: pointer
-    transition: $transition
+    transition: vars.$transition
     text-decoration: underline 1px solid transparent
     text-underline-offset: 0.1em
 
@@ -315,12 +316,12 @@ nav
     font-weight: unset
 
     &:hover
-      color: $c-main
-      text-decoration-color: $c-main
+      color: vars.$c-main
+      text-decoration-color: vars.$c-main
       text-underline-offset: 0.5em
 
     &.active
-      color: $c-main
+      color: vars.$c-main
 
 
 .hide-scrollbar
@@ -331,11 +332,11 @@ nav
 
 
 .aqua-tooltip
-  box-shadow: 0 0 5px 0 $c-shadow
-  border-radius: $border-radius
+  box-shadow: 0 0 5px 0 vars.$c-shadow
+  border-radius: vars.$border-radius
   position: absolute
   padding: 4px 8px
-  background: $ov-lighter
+  background: vars.$ov-lighter
   backdrop-filter: blur(5px)
 
 

@@ -77,7 +77,7 @@
 <StatusOverlays {error} loading={!me}/>
 
 <style lang="sass">
-  @import "../vars"
+  @use "../vars"
 
   .tabs
     display: flex
@@ -85,7 +85,7 @@
 
     div
       &.active
-        color: $c-main
+        color: vars.$c-main
 
   h3
     font-size: 1.3rem

@@ -60,14 +60,14 @@
 </Router>
 
 <style lang="sass">
-  @import "vars"
+  @use "vars"
 
   nav
     display: flex
     justify-content: flex-end
     align-items: center
     gap: 32px
-    height: $nav-height
+    height: vars.$nav-height
 
     padding: 0 48px
 
@@ -89,15 +89,15 @@
       align-items: center
       gap: 8px
       font-weight: bold
-      color: $c-main
+      color: vars.$c-main
       letter-spacing: 0.2em
       flex: 1
 
-      @media (max-width: $w-mobile)
+      @media (max-width: vars.$w-mobile)
         > span
           display: none
 
-    @media (max-width: $w-mobile)
+    @media (max-width: vars.$w-mobile)
       justify-content: center
 
 </style>

@@ -77,7 +77,7 @@
 </main>
 
 <style lang="sass">
-  @import "../vars"
+  @use "../vars"
 
   .leaderboard-container
     display: flex
@@ -89,7 +89,7 @@
     justify-content: space-between
     width: 100%
     gap: 12px
-    border-radius: $border-radius
+    border-radius: vars.$border-radius
     padding: 6px 12px
     box-sizing: border-box
 
@@ -104,7 +104,7 @@
         color: unset
 
       .registered
-        background: $grad-special
+        background: vars.$grad-special
         color: transparent
         -webkit-background-clip: text
         background-clip: text
@@ -121,14 +121,14 @@
       width: 5%
       min-width: 20px
 
-    @media (max-width: $w-mobile)
+    @media (max-width: vars.$w-mobile)
       font-size: 0.9rem
 
       .accuracy
         display: none
 
     &.alternate
-      background-color: $ov-light
+      background-color: vars.$ov-light
 
 
 </style>

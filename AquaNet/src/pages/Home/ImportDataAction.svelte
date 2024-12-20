@@ -126,7 +126,7 @@
 {/if}
 
 <style lang="sass">
-  @import "../../vars"
+  @use "../../vars"
   h3
     font-size: 1.3rem
     margin: 0
@@ -142,7 +142,7 @@
 
     .old
       background: #ff6b6b20
-      border: 1px solid $c-error
+      border: 1px solid vars.$c-error
       color: #ffffff99
       position: relative
 
@@ -151,13 +151,13 @@
         position: absolute
         bottom: 0.5rem
         right: 0.5rem
-        color: $c-error
+        color: vars.$c-error
         opacity: 0.6
         font-size: 2rem
 
     .new
       background: #646cff20
-      border: 1px solid $c-darker
+      border: 1px solid vars.$c-darker
 
   .buttons
     display: grid

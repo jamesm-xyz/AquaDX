@@ -157,7 +157,7 @@
 </main>
 
 <style lang="sass">
-  @import "../vars"
+  @use "../vars"
 
   .login-form
     display: flex
@@ -171,7 +171,7 @@
       align-items: center
 
   #home
-    color: $c-main
+    color: vars.$c-main
     position: relative
     width: 100%
     height: 100%
@@ -185,7 +185,7 @@
     flex-direction: column
     justify-content: center
 
-    margin-top: -$nav-height
+    margin-top: -(vars.$nav-height)
 
     // Content container
     > div
@@ -196,10 +196,10 @@
 
       // Switching state container
       > div
-        transition: $transition
+        transition: vars.$transition
 
     #title
-      font-family: Quicksand, $font
+      font-family: Quicksand, vars.$font
       user-select: none
 
       // Gap between text characters

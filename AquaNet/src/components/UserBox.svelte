@@ -432,7 +432,7 @@
 <StatusOverlays {error} {loading} />
 
 <style lang="sass">
-    @import "../vars"
+    @use "../vars"
 
     .outer-container
         display: flex
@@ -451,7 +451,7 @@
                 font-weight: 500
 
                 &.active
-                    color: $c-main
+                    color: vars.$c-main
 
     img
         width: 100%
@@ -462,7 +462,7 @@
       flex-direction: row
       gap: 3rem
 
-      @media (max-width: $w-max)
+      @media (max-width: vars.$w-max)
         flex-direction: column
 
     .preview
@@ -471,7 +471,7 @@
         gap: 1rem
         width: 50%
 
-        @media (max-width: $w-max)
+        @media (max-width: vars.$w-max)
             width: 100%
 
         .secondrow

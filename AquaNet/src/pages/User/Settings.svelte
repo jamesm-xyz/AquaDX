@@ -156,7 +156,7 @@
 </main>
 
 <style lang="sass">
-  @import "../../vars"
+  @use "../../vars"
 
   .fields
     display: flex
@@ -194,7 +194,7 @@
     img
       max-width: 100px
       max-height: 100px
-      border-radius: $border-radius
+      border-radius: vars.$border-radius
       object-fit: cover
 
 </style>

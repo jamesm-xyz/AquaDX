@@ -35,7 +35,7 @@
 </div>
 
 <style lang="sass">
-  @import "../vars"
+  @use "../vars"
 
   .rank-detail-container
     > div
@@ -48,11 +48,11 @@
       table-layout: fixed
 
       th:not(:first-child)
-        background: $grad-special
+        background: vars.$grad-special
         -webkit-background-clip: text
         -webkit-text-fill-color: transparent
         background-clip: text
-        color: $c-main
+        color: vars.$c-main
         padding: 0.5em
 
       th, td
@@ -60,5 +60,5 @@
         text-align: center
 
         &:first-child
-          color: $c-main
+          color: vars.$c-main
 </style>

@@ -32,12 +32,12 @@
 {/if}
 
 <style lang="sass">
-@import "../vars"
+@use "../vars"
 
 .user-card
   display: flex
   align-items: center
-  gap: $gap
+  gap: vars.$gap
 
   .details
     display: flex

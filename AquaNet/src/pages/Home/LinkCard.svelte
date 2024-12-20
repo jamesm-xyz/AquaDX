@@ -317,7 +317,7 @@
 </div>
 
 <style lang="sass">
-  @import "../../vars"
+  @use "../../vars"
 
   .link-card
     input
@@ -343,7 +343,7 @@
           white-space: nowrap
 
         &.ghost
-          background: rgba($c-darker, 0.8)
+          background: rgba(vars.$c-darker, 0.8)
 
         .register, .last
           opacity: 0.7
@@ -361,10 +361,10 @@
 
     .conflict-cards
       .card
-        transition: $transition
+        transition: vars.$transition
 
       .card:hover
-        background: $c-darker
+        background: vars.$c-darker
 
       span:not(.type)
         font-size: 0.8rem

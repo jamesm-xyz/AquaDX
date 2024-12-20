@@ -294,13 +294,13 @@
 </main>
 
 <style lang="sass">
-@import "../vars"
+@use "../vars"
 
 #user-home
   .user-pfp
     display: flex
     align-items: flex-end
-    gap: $gap
+    gap: vars.$gap
     margin-top: -72px
     position: relative
 
@@ -319,7 +319,7 @@
 
     .setting-icon
       font-size: 1.5rem
-      color: $c-main
+      color: vars.$c-main
       cursor: pointer
       display: flex
       align-items: center
@@ -334,10 +334,10 @@
   .pfp
     width: 100px
     height: 100px
-    border-radius: $border-radius
+    border-radius: vars.$border-radius
     object-fit: cover
 
-  @media (max-width: $w-mobile)
+  @media (max-width: vars.$w-mobile)
     .user-pfp
       margin-top: -68px
       h2
@@ -349,7 +349,7 @@
 
   .info-bottom, .info-top, .other-info
     display: flex
-    gap: $gap
+    gap: vars.$gap
 
     > div
       display: flex
@@ -361,7 +361,7 @@
 
         // character spacing
         letter-spacing: 0.1em
-        color: $c-main
+        color: vars.$c-main
 
   .info-bottom
     width: max-content
@@ -376,7 +376,7 @@
 
   .scoring-info
     display: flex
-    gap: $gap
+    gap: vars.$gap
     max-height: 250px
 
     .chart
@@ -408,7 +408,7 @@
           opacity: 0.5
           user-select: none
 
-    @media (max-width: $w-mobile)
+    @media (max-width: vars.$w-mobile)
       flex-direction: column
       max-height: unset
 
@@ -429,12 +429,12 @@
   .activity-info
     display: flex
     flex-direction: column
-    gap: $gap
+    gap: vars.$gap
 
     #cal-heatmap
       overflow-x: auto
 
-    @media (max-width: $w-mobile)
+    @media (max-width: vars.$w-mobile)
       #cal-heatmap
         width: 100%
 
@@ -453,17 +453,17 @@
       display: flex
       flex-direction: column
       flex-wrap: wrap
-      gap: $gap
+      gap: vars.$gap
 
       > div.alt
         background-color: rgba(white, 0.03)
-        border-radius: $border-radius
+        border-radius: vars.$border-radius
 
       // Image and song info
       > div
         display: flex
         align-items: center
-        gap: $gap
+        gap: vars.$gap
         padding-right: 16px
         max-width: 100%
         box-sizing: border-box
@@ -471,7 +471,7 @@
         img
           width: 50px
           height: 50px
-          border-radius: $border-radius
+          border-radius: vars.$border-radius
           object-fit: cover
 
         // Song info and score
@@ -493,7 +493,7 @@
           > div:last-child
             white-space: nowrap
 
-          @media (max-width: $w-mobile)
+          @media (max-width: vars.$w-mobile)
             flex-direction: column
             gap: 0
 
@@ -511,7 +511,7 @@
 
         .rank-S
           // Gold green gradient on text
-          background: $grad-special
+          background: vars.$grad-special
           -webkit-background-clip: text
           color: transparent
 
@@ -526,7 +526,7 @@
           text-align: center
           background: rgba(var(--lv-color), 0.6)
           padding: 0 6px
-          border-radius: $border-radius
+          border-radius: vars.$border-radius
           margin-right: 10px
 
         span
@@ -544,5 +544,5 @@
       span.increased
         &:before
           content: "+"
-        color: $c-good
+        color: vars.$c-good
 </style>
