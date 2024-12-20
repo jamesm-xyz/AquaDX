@@ -95,6 +95,7 @@ class ChusanServletController(
 
         // SDGS Exclusive
         "GetUserCtoCPlayApi", "GetUserCMissionApi", "GetUserNetBattleRankingInfoApi", "GetGameMapAreaConditionApi")
+    val matchingEndpoints = endpointList.filter { it.startsWith("MatchingServer") }.map { it.split("/").last() }.toSet()
 
     val noopEndpoint = endpointList.popAll("UpsertClientBookkeepingApi", "UpsertClientDevelopApi", "UpsertClientErrorApi",
         "UpsertClientSettingApi", "UpsertClientTestmodeApi", "CreateTokenApi", "RemoveTokenApi", "UpsertClientUploadApi",
