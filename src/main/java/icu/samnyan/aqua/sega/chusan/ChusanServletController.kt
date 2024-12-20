@@ -36,10 +36,6 @@ class ChusanServletController(
     val getUserOption: GetUserOptionHandler,
     val getUserPreview: GetUserPreviewHandler,
     val getUserRecentRating: GetUserRecentRatingHandler,
-    val getUserRegion: GetUserRegionHandler,
-    val getUserRivalData: GetUserRivalDataHandler,
-    val getUserRivalMusic: GetUserRivalMusicHandler,
-    val getUserSymbolChatSetting: GetUserSymbolChatSettingHandler,
     val getUserNetBattleData: GetUserNetBattleDataHandler,
     val getUserTeam: GetUserTeamHandler,
     val upsertUserAll: UpsertUserAllHandler,
@@ -51,15 +47,12 @@ class ChusanServletController(
     val cmGetUserData: CMGetUserDataHandler,
     val cmGetUserCharacter: CMGetUserCharacterHandler,
     val getUserGacha: GetUserGachaHandler,
-    val getUserPrintedCard: GetUserPrintedCardHandler,
     val cmGetUserItem: CMGetUserItemHandler,
     val rollGacha: RollGachaHandler,
     val cmUpsertUserGacha: CMUpsertUserGachaHandler,
     val cmUpsertUserPrintSubtract: CMUpsertUserPrintSubtractHandler,
     val cmUpsertUserPrintCancel: CMUpsertUserPrintCancelHandler,
     val beginMatching: BeginMatchingHandler,
-    val endMatching: EndMatchingHandler,
-    val getMatchingState: GetMatchingStateHandler,
     val removeMatchingMember: RemoveMatchingMemberHandler,
 
     // Luminous
@@ -73,12 +66,25 @@ class ChusanServletController(
 
     val getGameRanking = BaseHandler { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
     val getGameIdlist = BaseHandler { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
+
     val getTeamCourseSetting = BaseHandler { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseSettingList":[]}""" }
     val getTeamCourseRule = BaseHandler { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseRuleList":[]}""" }
     val getUserCtoCPlay = BaseHandler { """{"userId":"${it["userId"]}","orderBy":"0","count":"0","userCtoCPlayList":[]}""" }
+    val getUserRivalMusic = BaseHandler { """{"userId":"${it["userId"]}","rivalId":"0","length":"0","nextIndex":"0","userRivalMusicList":[]}""" }
+    val getUserRivalData = BaseHandler { """{"userId":"${it["userId"]}","length":"0","userRivalData":[]}""" }
+    val getUserRegion = BaseHandler { """{"userId":"${it["userId"]}","length":"0","userRegionList":[]}""" }
+    val getUserPrintedCard = BaseHandler { """{"userId":"${it["userId"]}","length":0,"nextIndex":-1,"userPrintedCardList":[]}""" }
+    val getUserSymbolChatSetting = BaseHandler { """{"userId":"${it["userId"]}","length":"0","symbolChatInfoList":[]}""" }
+
     val cmUpsertUserPrint = BaseHandler { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintApi"}""" }
     val cmUpsertUserPrintlog = BaseHandler { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintlogApi"}""" }
 
+    // Matching
+    val endMatching = BaseHandler { """{"matchingResult":{"matchingMemberInfoList":[],"matchingMemberRoleList":[],"reflectorUri":""}}""" }
+    val getMatchingState = BaseHandler { """{"matchingWaitState":{"restMSec":"30000","pollingInterval":"10","matchingMemberInfoList":[],"isFinish":"true"}}""" }
+
+
+    // Below are code related to handling the handlers
     val endpointList = mutableListOf(
         "GameLoginApi", "GameLogoutApi", "GetGameChargeApi", "GetGameEventApi", "GetGameIdlistApi",
         "GetGameRankingApi", "GetGameSettingApi", "GetTeamCourseRuleApi", "GetTeamCourseSettingApi", "GetUserActivityApi",
@@ -134,7 +140,7 @@ class ChusanServletController(
             logger.info("Chu3 > $api no-op")
             return """{"returnCode":"1"}"""
         }
-        logger.info("Chu3 > $api : $request")
+        logger.info("Chu3 < $api : $request")
 
         return try {
             Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
