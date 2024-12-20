@@ -140,7 +140,7 @@ class ChusanServletController(
 fun ChusanServletController.init() {
     // Stub handlers
     "GetGameRanking" { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
-    "GetGameIdlist" { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
+    "GetGameIdlist" { """{"type":"${it["type"]}","length":"0","gameIdlistList":[]}""" }
 
     "GetTeamCourseSetting" { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseSettingList":[]}""" }
     "GetTeamCourseRule" { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseRuleList":[]}""" }
@@ -171,7 +171,7 @@ fun ChusanServletController.init() {
     }
     "GetUserActivity" user { req, u ->
         val kind = parsing { req["kind"]!!.int }
-        val a = db.userActivity.findAllByUser_Card_ExtIdAndKind(u, kind).sortedBy { it.sortNumber }
+        val a = db.userActivity.findAllByUser_Card_ExtIdAndKind(u, kind).sortedBy { -it.sortNumber }
         mapOf("userId" to u, "length" to a.size, "kind" to kind, "userActivityList" to a)
     }
     "GetUserCharge" user { _, u -> db.userCharge.findByUser_Card_ExtId(u)
