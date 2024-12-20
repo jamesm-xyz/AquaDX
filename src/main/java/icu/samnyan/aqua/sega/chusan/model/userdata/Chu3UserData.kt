@@ -5,127 +5,19 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import icu.samnyan.aqua.net.games.BaseEntity
 import icu.samnyan.aqua.net.games.IUserData
 import icu.samnyan.aqua.sega.chusan.model.response.data.UserEmoney
 import icu.samnyan.aqua.sega.general.model.Card
 import icu.samnyan.aqua.sega.util.jackson.AccessCodeSerializer
 import jakarta.persistence.*
-import lombok.Getter
 import lombok.NoArgsConstructor
-import lombok.Setter
 import java.time.LocalDateTime
 
 @Entity(name = "ChusanUserData")
 @Table(name = "chusan_user_data")
-@Getter
-@Setter
 @NoArgsConstructor
-@JsonPropertyOrder(
-    "accessCode",
-    "userName",
-    "level",
-    "reincarnationNum",
-    "exp",
-    "point",
-    "totalPoint",
-    "playCount",
-    "multiPlayCount",
-    "playerRating",
-    "highestRating",
-    "nameplateId",
-    "frameId",
-    "characterId",
-    "trophyId",
-    "playedTutorialBit",
-    "firstTutorialCancelNum",
-    "masterTutorialCancelNum",
-    "totalMapNum",
-    "totalHiScore",
-    "totalBasicHighScore",
-    "totalAdvancedHighScore",
-    "totalExpertHighScore",
-    "totalMasterHighScore",
-    "totalUltimaHighScore",
-    "eventWatchedDate",
-    "friendCount",
-    "firstGameId",
-    "firstRomVersion",
-    "firstDataVersion",
-    "firstPlayDate",
-    "lastGameId",
-    "lastRomVersion",
-    "lastDataVersion",
-    "lastPlayDate",
-    "lastPlaceId",
-    "lastPlaceName",
-    "lastRegionId",
-    "lastRegionName",
-    "lastAllNetId",
-    "lastClientId",
-    "lastCountryCode",
-    "userNameEx",
-    "compatibleCmVersion",
-    "medal",
-    "mapIconId",
-    "voiceId",
-    "avatarWear",
-    "avatarHead",
-    "avatarFace",
-    "avatarSkin",
-    "avatarItem",
-    "avatarFront",
-    "avatarBack",
-    "classEmblemBase",
-    "classEmblemMedal",
-    "stockedGridCount",
-    "exMapLoopCount",
-    "netBattlePlayCount",
-    "netBattleWinCount",
-    "netBattleLoseCount",
-    "netBattleConsecutiveWinCount",
-    "charaIllustId",
-    "skillId",
-    "overPowerPoint",
-    "overPowerRate",
-    "overPowerLowerRank",
-    "avatarPoint",
-    "battleRankId",
-    "battleRankPoint",
-    "eliteRankPoint",
-    "netBattle1stCount",
-    "netBattle2ndCount",
-    "netBattle3rdCount",
-    "netBattle4thCount",
-    "netBattleCorrection",
-    "netBattleErrCnt",
-    "netBattleHostErrCnt",
-    "battleRewardStatus",
-    "battleRewardIndex",
-    "battleRewardCount",
-    "ext1",
-    "ext2",
-    "ext3",
-    "ext4",
-    "ext5",
-    "ext6",
-    "ext7",
-    "ext8",
-    "ext9",
-    "ext10",
-    "extStr1",
-    "extStr2",
-    "extLong1",
-    "extLong2",
-    "rankUpChallengeResults",
-    "isNetBattleHost",
-    "netBattleEndState"
-)
-class Chu3UserData : IUserData {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
-    override var id: Long = 0
-
+class Chu3UserData : BaseEntity(), IUserData {
     @JsonSerialize(using = AccessCodeSerializer::class)
     @JsonProperty(value = "accessCode", access = JsonProperty.Access.READ_ONLY)
     @OneToOne(fetch = FetchType.LAZY)
