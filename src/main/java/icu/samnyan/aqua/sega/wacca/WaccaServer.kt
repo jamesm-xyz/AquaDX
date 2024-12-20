@@ -23,8 +23,6 @@ import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
-val empty = emptyList<Any>()
-
 @RestController
 @API("/g/wacca/")
 class WaccaServer {

@@ -6,17 +6,11 @@ import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
 import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.util.jackson.StringMapper
-import icu.samnyan.aqua.sega.wacca.empty
 import icu.samnyan.aqua.spring.Metrics
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.RestController
 import kotlin.collections.set
 import kotlin.reflect.full.declaredMemberProperties
-
-fun interface WithUser : BaseHandler {
-    override fun handle(request: Map<String, Any>) = handleThis(request, parsing { request["userId"]!!.long })
-    fun handleThis(request: Map<String, Any>, extId: Long): Any
-}
 
 /**
  * @author samnyan (privateamusement@protonmail.com)
@@ -58,63 +52,7 @@ class ChusanServletController(
     val mapper: StringMapper,
     val repos: Chu3Repos,
 ) {
-    fun static(o: Any) = mapper.write(o).let { resp -> BaseHandler { resp } }
-
     val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
-    val events = resJson<List<Map<Str, Int>>>("/static/chusan_game_event.json")!!.filter { it["enable"].truthy }
-        .map { it.filterKeys { it != "enable" } + mapOf("startDate" to "2019-01-01 00:00:00", "endDate" to "2029-01-01 00:00:00") }
-
-    val getGameRanking = BaseHandler { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
-    val getGameIdlist = BaseHandler { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
-
-    val getTeamCourseSetting = BaseHandler { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseSettingList":[]}""" }
-    val getTeamCourseRule = BaseHandler { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseRuleList":[]}""" }
-    val getUserCtoCPlay = BaseHandler { """{"userId":"${it["userId"]}","orderBy":"0","count":"0","userCtoCPlayList":[]}""" }
-    val getUserRivalMusic = BaseHandler { """{"userId":"${it["userId"]}","rivalId":"0","length":"0","nextIndex":"0","userRivalMusicList":[]}""" }
-    val getUserRivalData = BaseHandler { """{"userId":"${it["userId"]}","length":"0","userRivalData":[]}""" }
-    val getUserRegion = BaseHandler { """{"userId":"${it["userId"]}","length":"0","userRegionList":[]}""" }
-    val getUserPrintedCard = BaseHandler { """{"userId":"${it["userId"]}","length":0,"nextIndex":-1,"userPrintedCardList":[]}""" }
-    val getUserSymbolChatSetting = BaseHandler { """{"userId":"${it["userId"]}","length":"0","symbolChatInfoList":[]}""" }
-    val getUserNetBattleData = BaseHandler { """{"userId":"${it["userId"]}","userNetBattleData":{"recentNBSelectMusicList":[],"recentNBMusicList":[]}}""" }
-    val getUserNetBattleRankingInfo = BaseHandler { """{"userId":"${it["userId"]}","length":"0","userNetBattleRankingInfoList":{}}""" }
-
-    val cmUpsertUserPrint = BaseHandler { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintApi"}""" }
-    val cmUpsertUserPrintlog = BaseHandler { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintlogApi"}""" }
-
-    // Matching
-    val endMatching = BaseHandler { """{"matchingResult":{"matchingMemberInfoList":[],"matchingMemberRoleList":[],"reflectorUri":""}}""" }
-    val getMatchingState = BaseHandler { """{"matchingWaitState":{"restMSec":"30000","pollingInterval":"10","matchingMemberInfoList":[],"isFinish":"true"}}""" }
-
-    // Actual handlers
-    val getUserData = WithUser { _, u ->
-        val user = repos.userData.findByCard_ExtId(u)() ?: (400 - "User not found")
-        mapOf("userId" to u, "userData" to user)
-    }
-    val getUserOption = WithUser { _, u ->
-        val userGameOption = repos.userGameOption.findSingleByUser_Card_ExtId(u)() ?: (400 - "User not found")
-        mapOf("userId" to u, "userGameOption" to userGameOption)
-    }
-    val getUserActivity = WithUser { req, u ->
-        val kind = parsing { req["kind"]!!.int }
-        val a = repos.userActivity.findAllByUser_Card_ExtIdAndKind(u, kind).sortedBy { it.sortNumber }
-        mapOf("userId" to u, "length" to a.size, "kind" to kind, "userActivityList" to a)
-    }
-    val getUserCharge = WithUser { _, u -> repos.userCharge.findByUser_Card_ExtId(u)
-        .let { mapOf("userId" to u, "length" to it.size, "userChargeList" to it) }
-    }
-    val getUserDuel = WithUser { _, u -> repos.userDuel.findByUser_Card_ExtId(u)
-        .let { mapOf("userId" to u, "length" to it.size, "userDuelList" to it) }
-    }
-    val getGameEvent = static(mapOf("type" to 1, "length" to events.size, "gameEventList" to events))
-    val getGameCharge = static(repos.gameCharge.findAll().let { mapOf("length" to it.size, "gameChargeList" to it) })
-    val getGameGacha = static(repos.gameGacha.findAll()
-        .let { mapOf("length" to it.size, "gameGachaList" to it, "registIdList" to empty) }
-    )
-    val getGameGachaCardById = BaseHandler {
-        val id = parsing { it["gachaId"]!!.int }
-        val cards = repos.gameGachaCard.findAllByGachaId(id)
-        mapOf("gachaId" to id, "length" to cards.size, "isPickup" to false, "gameGachaCardList" to cards, "emissionList" to empty, "afterCalcList" to empty)
-    }
 
     // Below are code related to handling the handlers
     val endpointList = mutableListOf(
@@ -130,8 +68,6 @@ class ChusanServletController(
         "GetUserGachaApi", "CMGetUserItemApi", "CMGetUserPreviewApi", "GetUserPrintedCardApi",
         "RollGachaApi", "CMUpsertUserGachaApi", "CMUpsertUserPrintApi", "CMUpsertUserPrintCancelApi",
         "CMUpsertUserPrintlogApi", "CMUpsertUserPrintSubtractApi",
-
-        // SDGS Exclusive
         "GetUserCtoCPlayApi", "GetUserCMissionApi", "GetUserNetBattleRankingInfoApi", "GetGameMapAreaConditionApi")
 
     val noopEndpoint = setOf("UpsertClientBookkeepingApi", "UpsertClientDevelopApi", "UpsertClientErrorApi",
@@ -142,9 +78,17 @@ class ChusanServletController(
     val matchingEndpoints = (endpointList + noopEndpoint).filter { it.startsWith("MatchingServer") }
         .map { it.split("/").last() }.toSet()
 
+    // Fun!
+    val initH = mutableMapOf<String, BaseHandler>()
+    operator fun String.invoke(fn: (Map<String, Any>) -> Any) = initH.set(this.lowercase(), BaseHandler(fn))
+    infix fun String.user(fn: (Map<String, Any>, Long) -> Any) = this { fn(it, parsing { it["userId"]!!.long }) }
+    infix fun String.static(fn: () -> Any) = mapper.write(fn()).let { resp -> this { resp } }
+    val meow = init()
+
     val members = this::class.declaredMemberProperties
     val handlers: Map<String, BaseHandler> = endpointList.associateWith { api ->
         val name = api.replace("Api", "").replace("MatchingServer/", "").lowercase()
+        initH[name]?.let { return@associateWith it }
         (members.find { it.name.lowercase() == name } ?: members.find { it.name.lowercase() == name.replace("cm", "") })
             ?.let { it.call(this) as BaseHandler }
             ?: throw IllegalArgumentException("Chu3: No handler found for $api")
@@ -190,4 +134,60 @@ class ChusanServletController(
             throw e
         }
     }
+}
+
+
+fun ChusanServletController.init() {
+    // Stub handlers
+    "GetGameRanking" { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
+    "GetGameIdlist" { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
+
+    "GetTeamCourseSetting" { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseSettingList":[]}""" }
+    "GetTeamCourseRule" { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseRuleList":[]}""" }
+    "GetUserCtoCPlay" { """{"userId":"${it["userId"]}","orderBy":"0","count":"0","userCtoCPlayList":[]}""" }
+    "GetUserRivalMusic" { """{"userId":"${it["userId"]}","rivalId":"0","length":"0","nextIndex":"0","userRivalMusicList":[]}""" }
+    "GetUserRivalData" { """{"userId":"${it["userId"]}","length":"0","userRivalData":[]}""" }
+    "GetUserRegion" { """{"userId":"${it["userId"]}","length":"0","userRegionList":[]}""" }
+    "GetUserPrintedCard" { """{"userId":"${it["userId"]}","length":0,"nextIndex":-1,"userPrintedCardList":[]}""" }
+    "GetUserSymbolChatSetting" { """{"userId":"${it["userId"]}","length":"0","symbolChatInfoList":[]}""" }
+    "GetUserNetBattleData" { """{"userId":"${it["userId"]}","userNetBattleData":{"recentNBSelectMusicList":[],"recentNBMusicList":[]}}""" }
+    "GetUserNetBattleRankingInfo" { """{"userId":"${it["userId"]}","length":"0","userNetBattleRankingInfoList":{}}""" }
+
+    "CMUpsertUserPrint" { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintApi"}""" }
+    "CMUpsertUserPrintlog" { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintlogApi"}""" }
+
+    // Matching
+    "EndMatching" { """{"matchingResult":{"matchingMemberInfoList":[],"matchingMemberRoleList":[],"reflectorUri":""}}""" }
+    "GetMatchingState" { """{"matchingWaitState":{"restMSec":"30000","pollingInterval":"10","matchingMemberInfoList":[],"isFinish":"true"}}""" }
+
+    // User handlers
+    "GetUserData" user { _, u ->
+        val user = repos.userData.findByCard_ExtId(u)() ?: (400 - "User not found")
+        mapOf("userId" to u, "userData" to user)
+    }
+    "GetUserOption" user { _, u ->
+        val userGameOption = repos.userGameOption.findSingleByUser_Card_ExtId(u)() ?: (400 - "User not found")
+        mapOf("userId" to u, "userGameOption" to userGameOption)
+    }
+    "GetUserActivity" user { req, u ->
+        val kind = parsing { req["kind"]!!.int }
+        val a = repos.userActivity.findAllByUser_Card_ExtIdAndKind(u, kind).sortedBy { it.sortNumber }
+        mapOf("userId" to u, "length" to a.size, "kind" to kind, "userActivityList" to a)
+    }
+    "GetUserCharge" user { _, u -> repos.userCharge.findByUser_Card_ExtId(u)
+        .let { mapOf("userId" to u, "length" to it.size, "userChargeList" to it) }
+    }
+    "GetUserDuel" user { _, u -> repos.userDuel.findByUser_Card_ExtId(u)
+        .let { mapOf("userId" to u, "length" to it.size, "userDuelList" to it) }
+    }
+
+    // Other handlers
+    "GetGameGachaCardById" { repos.gameGachaCard.findAllByGachaId(parsing { it["gachaId"]!!.int }).let {
+        mapOf("gachaId" to it.size, "length" to it.size, "isPickup" to false, "gameGachaCardList" to it, "emissionList" to empty, "afterCalcList" to empty)
+    } }
+
+    // Static
+    "GetGameEvent" static { repos.gameEvent.findByEnable(true).let { mapOf("type" to 1, "length" to it.size, "gameEventList" to it) } }
+    "GetGameCharge" static { repos.gameCharge.findAll().let { mapOf("length" to it.size, "gameChargeList" to it) } }
+    "GetGameGacha" static { repos.gameGacha.findAll().let { mapOf("length" to it.size, "gameGachaList" to it, "registIdList" to empty) } }
 }

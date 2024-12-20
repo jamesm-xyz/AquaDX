@@ -209,6 +209,7 @@ operator fun <E> List<E>.component12(): E = get(11)
 operator fun <E> List<E>.component13(): E = get(12)
 
 inline operator fun <reified E> List<Any?>.invoke(i: Int) = get(i) as E
+val empty = emptyList<Any>()
 
 val <F> Pair<F, *>.l get() = component1()
 val <S> Pair<*, S>.r get() = component2()
