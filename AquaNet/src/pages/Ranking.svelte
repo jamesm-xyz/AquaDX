@@ -38,7 +38,7 @@
 
   {#if d}
     <div class="leaderboard-container">
-      <div class="lb-user" on:mouseenter={() => hoveringUser = d.users[0].username}>
+      <div class="lb-user" on:mouseenter={() => hoveringUser = d.users[0].username} role="heading" aria-level="2">
         <span class="rank">{t("Leaderboard.Rank")}</span>
         <span class="name"></span>
         <span class="rating">{t("Leaderboard.Rating")}</span>
@@ -47,7 +47,9 @@
         <span class="ap">{t("Leaderboard.AP")}</span>
       </div>
       {#each d.users as user, i (user.rank)}
-        <div class="lb-user" class:alternate={i % 2 === 1} on:mouseover={() => hoveringUser = user.username}>
+        <div class="lb-user" class:alternate={i % 2 === 1} role="listitem"
+          on:mouseover={() => hoveringUser = user.username} on:focus={() => {}}>
+
           <span class="rank">#{user.rank}</span>
           <span class="name">
             {#if user.username !== ""}

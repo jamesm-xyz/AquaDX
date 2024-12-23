@@ -26,16 +26,10 @@
 
 <style lang="sass">
   @use "../vars"
-  
+
   .rating-composition
     display: grid
     // 3 columns
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr))
-    gap: vars.$gap
-
-  .rating-composition-2
-    display: grid
-    // 2 columns
-    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr))
     gap: vars.$gap
 </style>

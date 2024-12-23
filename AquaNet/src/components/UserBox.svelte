@@ -434,36 +434,9 @@
 <style lang="sass">
     @use "../vars"
 
-    .outer-container
-        display: flex
-        flex-direction: column
-        gap: 1rem
-
-        nav
-            display: flex
-            gap: 1rem
-
-            div
-                padding: 0.5rem 1rem
-                border-radius: 0.4rem
-                cursor: pointer
-                transition: background-color 0.2s
-                font-weight: 500
-
-                &.active
-                    color: vars.$c-main
-
     img
         width: 100%
         height: auto
-
-    .container
-      display: flex
-      flex-direction: row
-      gap: 3rem
-
-      @media (max-width: vars.$w-max)
-        flex-direction: column
 
     .preview
         display: flex

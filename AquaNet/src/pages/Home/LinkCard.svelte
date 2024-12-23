@@ -222,7 +222,7 @@
           <span class="type">{card.isGhost ? t('home.linkcard.account-card') : cardType(card.luid)}</span>
           <span class="register">{t('home.linkcard.registered')}: {moment(card.registerTime).format("YYYY MMM DD")}</span>
           <span class="last">{t('home.linkcard.lastused')}: {moment(card.accessTime).format("YYYY MMM DD")}</span>
-          <div/>
+          <div></div>
           <span class="id">{formatLUID(card.luid, card.isGhost)}</span>
           {#if !card.isGhost}
             <button class="icon error" on:click={() => unlink(card)}><Icon icon="tabler:trash-x-filled"/></button>
@@ -334,30 +334,30 @@
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr))
       gap: 1rem
 
-      .existing.card
-        min-height: 90px
-        position: relative
-        overflow: hidden
+    .existing-cards .existing.card
+      min-height: 90px
+      position: relative
+      overflow: hidden
 
-        *
-          white-space: nowrap
+      *
+        white-space: nowrap
 
-        &.ghost
-          background: rgba(vars.$c-darker, 0.8)
+      &.ghost
+        background: rgba(vars.$c-darker, 0.8)
 
-        .register, .last
-          opacity: 0.7
+      .register, .last
+        opacity: 0.7
 
-        span:not(.type)
-          font-size: 0.8rem
+      span:not(.type)
+        font-size: 0.8rem
 
-        > div
-          flex: 1
+      > div
+        flex: 1
 
-        button
-          position: absolute
-          right: 10px
-          bottom: 10px
+      button
+        position: absolute
+        right: 10px
+        bottom: 10px
 
     .conflict-cards
       .card

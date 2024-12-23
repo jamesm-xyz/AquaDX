@@ -109,9 +109,10 @@
       <div class="name-box">
         <h2>{d.user.name}</h2>
         {#if typeof d.user.rival === 'boolean' && game === 'mai2'}
-          <a class="clickable" on:click={()=>setRival(!d.user.rival)}>
+          <span class="clickable" on:click={() => setRival(!d?.user.rival)} role="button" tabindex="0"
+             on:keydown={e => e.key === "Enter" && setRival(!d?.user.rival)}>
             {d.user.rival ? t("UserHome.RemoveRival") : t("UserHome.AddRival")}
-          </a>
+          </span>
         {/if}
         {#if me && me.username === username}
           <a class="setting-icon clickable" use:tooltip={t("UserHome.Settings")} href="/settings">
@@ -219,7 +220,7 @@
     <div>
       <h2>{t('UserHome.PlayActivity')}</h2>
       <div class="activity-info">
-        <div class="hide-scrollbar" id="cal-heatmap" bind:this={calElement} />
+        <div class="hide-scrollbar" id="cal-heatmap" bind:this={calElement}></div>
 
         <div class="info-bottom">
           <div class="plays">

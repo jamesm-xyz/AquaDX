@@ -52,7 +52,7 @@
       filter: drop-shadow(0 0 12px rgba(var(--card-color), 0.5))
       outline-color: rgba(var(--card-color), 0.5)
 
-    span
+    :global(span)
       font-size: 1.2rem
       display: block
       margin-bottom: 0.5rem
