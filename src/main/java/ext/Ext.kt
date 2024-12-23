@@ -22,6 +22,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.locks.Lock
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty1
@@ -189,6 +190,8 @@ fun Str.md5() = MD5.digest(toByteArray(Charsets.UTF_8)).toHexString()
 
 // Coroutine
 suspend fun <T> async(block: suspend kotlinx.coroutines.CoroutineScope.() -> T): T = withContext(Dispatchers.IO) { block() }
+fun <T> thread(block: () -> T) = Thread { block() }.apply { start() }
+fun <T> Lock.maybeLock(block: () -> T) = if (tryLock()) try { block() } finally { unlock() } else null
 
 // Paths
 fun path(part1: Str, vararg parts: Str) = Path.of(part1, *parts)

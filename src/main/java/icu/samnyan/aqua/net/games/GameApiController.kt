@@ -4,7 +4,11 @@ import ext.*
 import icu.samnyan.aqua.net.db.AquaUserServices
 import icu.samnyan.aqua.net.utils.SUCCESS
 import icu.samnyan.aqua.sega.general.model.Card
+import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Scheduled
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.jvm.optionals.getOrNull
 import kotlin.reflect.KClass
 
@@ -32,18 +36,41 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
     }
 
     // Pair<time, List<Pair<should_hide, player>>>
-    private var rankingCache: Pair<Long, List<Pair<Bool, GenericRankingPlayer>>> = 0L to emptyList()
-    private val rankingCacheDuration = 240_000
+    private var rankingCache: List<Pair<Bool, GenericRankingPlayer>> = emptyList()
+    private var rankingCacheLock = ReentrantLock()
     @API("ranking")
     fun ranking(@RP token: String?): List<GenericRankingPlayer> {
         val time = millis()
-        val tableName = when (name) { "mai2" -> "maimai2"; "chu3" -> "chusan"; else -> name }
 
-        // Check if ranking cache needs to be updated
+        // Check cache validity
+        if (rankingCache.isEmpty()) (500 - "Ranking is computing... please wait")
+
+        val reqUser = token?.let { us.jwt.auth(it) }?.let { u ->
+            // Optimization: If the user is not banned, we don't need to process user information
+            if (!u.ghostCard.rankingBanned && !u.cards.any { it.rankingBanned }) null
+            else u
+        }
+
+        // Read from cache if we just computed it less than duration ago
+        // Shadow-ban: Do not show banned cards in the ranking except for the user who owns the card
         // TODO: pagination
-        if (time - rankingCache.first > rankingCacheDuration) {
-            rankingCache = time to us.em.createNativeQuery(
-                """
+        return rankingCache.filter { !it.l || it.r.username == reqUser?.username }
+            .mapIndexed { i, it -> it.r.apply { rank = i + 1 } }
+            .also { logger.info("Ranking returned in ${millis() - time}ms") }
+    }
+
+    @PostConstruct
+    fun rakingCacheInit() = thread { rankingCacheRun() }
+
+    // Every 20 minutes
+    @Scheduled(fixedRate = 20, timeUnit = TimeUnit.MINUTES)
+    fun rankingCacheRun() = rankingCacheLock.maybeLock { rankingCacheCompute() }
+
+    fun rankingCacheCompute() {
+        val time = millis()
+        val tableName = when (name) { "mai2" -> "maimai2"; "chu3" -> "chusan"; else -> name }
+        rankingCache = us.em.createNativeQuery(
+            """
                 SELECT
                     c.id,
                     u.user_name,
@@ -61,31 +88,19 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
                 GROUP BY p.user_id, u.player_rating
                 ORDER BY u.player_rating DESC;
             """
-            ).exec.mapIndexed { i, it ->
-                it[7].truthy to GenericRankingPlayer(
-                    rank = i + 1,
-                    name = it[1].toString(),
-                    rating = it[2]!!.int,
-                    lastSeen = it[3].toString(),
-                    accuracy = it[4]!!.double,
-                    fullCombo = it[5]!!.int,
-                    allPerfect = it[6]!!.int,
-                    username = it[8]?.toString() ?: "user${it[0]}"
-                )
-            }
+        ).exec.mapIndexed { i, it ->
+            it[7].truthy to GenericRankingPlayer(
+                rank = i + 1,
+                name = it[1].toString(),
+                rating = it[2]!!.int,
+                lastSeen = it[3].toString(),
+                accuracy = it[4]!!.double,
+                fullCombo = it[5]!!.int,
+                allPerfect = it[6]!!.int,
+                username = it[8]?.toString() ?: "user${it[0]}"
+            )
         }
-
-        val reqUser = token?.let { us.jwt.auth(it) }?.let { u ->
-            // Optimization: If the user is not banned, we don't need to process user information
-            if (!u.ghostCard.rankingBanned && !u.cards.any { it.rankingBanned }) null
-            else u
-        }
-
-        // Read from cache if we just computed it less than duration ago
-        // Shadow-ban: Do not show banned cards in the ranking except for the user who owns the card
-        return rankingCache.r.filter { !it.l || it.r.username == reqUser?.username }
-            .mapIndexed { i, it -> it.r.apply { rank = i + 1 } }
-            .also { logger.info("Ranking computed in ${millis() - time}ms") }
+        logger.info("Ranking computed in ${millis() - time}ms")
     }
 
     @API("playlog")
