@@ -121,8 +121,6 @@ open class BaseEntity(
 interface GenericUserDataRepo<T : IUserData> : JpaRepository<T, Long> {
     fun findByCard(card: Card): T?
     fun findByCard_ExtId(extId: Long): Optional<T>
-    @Query("select count(*) from #{#entityName} e where e.playerRating > :rating and e.card.rankingBanned = false")
-    fun getRanking(rating: Int): Long
 
     @Query("select e from #{#entityName} e where e.card.rankingBanned = false")
     fun findAllNonBanned(): List<T>

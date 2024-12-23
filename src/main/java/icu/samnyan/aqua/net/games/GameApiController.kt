@@ -35,9 +35,11 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
         playlogRepo.findByUserCardExtId(card.extId)
     }
 
-    // Pair<time, List<Pair<should_hide, player>>>
+    // List<Pair<should_hide, player>>>
     private var rankingCache: List<Pair<Bool, GenericRankingPlayer>> = emptyList()
     private var rankingCacheLock = ReentrantLock()
+    // Sorted index List<Rating> = Rank
+    private var rankingSortedIndex: List<Int> = emptyList()
     @API("ranking")
     fun ranking(@RP token: String?): List<GenericRankingPlayer> {
         val time = millis()
@@ -100,7 +102,8 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
                 username = it[8]?.toString() ?: "user${it[0]}"
             )
         }
-        logger.info("Ranking computed in ${millis() - time}ms")
+        rankingSortedIndex = rankingCache.filter { !it.l }.map { it.r.rating }.reversed()
+        logger.info("Ranking for $name computed in ${millis() - time}ms")
     }
 
     @API("playlog")
@@ -153,10 +156,15 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
             }
         }
 
+        // Find serverRank by binary-searching in the rankingSortedIndex to find the minimal index that
+        // is greater than or equal to the user's rating
+        var serverRank = rankingSortedIndex.binarySearch(user.playerRating).let { if (it < 0) -it - 1 else it + 1 }
+        serverRank = rankingSortedIndex.size - serverRank
+
         return GenericGameSummary(
             name = user.userName,
             aquaUser = card.aquaUser?.publicFields,
-            serverRank = userDataRepo.getRanking(user.playerRating),
+            serverRank = serverRank.long,
             accuracy = plays.acc(),
             rating = user.playerRating,
             ratingHighest = user.highestRating,
