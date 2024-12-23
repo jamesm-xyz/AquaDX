@@ -12,7 +12,6 @@
   } from "../libs/generalTypes";
   import { DATA_HOST } from "../libs/config";
   import 'cal-heatmap/cal-heatmap.css';
-  import { Line } from 'svelte-chartjs';
   import moment from "moment";
   import 'chartjs-adapter-moment';
   import { CARD, DATA, GAME, USER } from "../libs/sdk";
@@ -23,6 +22,7 @@
   import RankDetails from "../components/RankDetails.svelte";
   import RatingComposition from "../components/RatingComposition.svelte";
   import useLocalStorage from "../libs/hooks/useLocalStorage.svelte";
+  import Line from "../components/chart/Line.svelte";
 
   const TREND_DAYS = 60
 
