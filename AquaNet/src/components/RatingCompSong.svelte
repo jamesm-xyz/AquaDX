@@ -19,8 +19,6 @@
   let mapRank: number | undefined = meta?.notes?.[mapData[1] === 10 ? 0 : mapData[1]]?.lv
   const rounding = useLocalStorage("rounding", true);
 
-  console.log(rounding.value)
-
   let gameIndexMap = {
   'mai2': 3,
   'ongeki': 2,

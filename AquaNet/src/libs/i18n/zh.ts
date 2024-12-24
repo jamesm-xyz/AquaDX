@@ -122,7 +122,7 @@ const zhHome: typeof EN_REF_HOME = {
   'home.setup.ask': "如果您有任何问题, 请加入我们的",
   'home.setup.support': "以获取支持",
   'home.setup.keychip-tips': "这是你的狗号, 不要与任何人分享",
-  'home.import.unknown-game': '未知游戏类型',
+  'home.import.unknown-game': '未知游戏类型 (目前导入只支持舞萌和中二)',
   'home.import.new-data': '要导入的数据',
   'home.import.data-conflict': '继续导入将覆盖现有数据',
 }

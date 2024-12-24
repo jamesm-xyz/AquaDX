@@ -5,7 +5,6 @@
   import StatusOverlays from "../../components/StatusOverlays.svelte";
   import { CARD, GAME, USER } from "../../libs/sdk";
   import Icon from "@iconify/svelte";
-  import { showOpenFilePicker } from 'show-open-file-picker'
 
   let load = false;
   let error = "";
@@ -17,25 +16,14 @@
   } | null;
   let confirmAction: (override: boolean) => void;
 
-  const startImport = async () => {
-    const [fileHandle] = await (window.showOpenFilePicker || showOpenFilePicker)({
-      id: 'aquadx_import' as any,
-      startIn: 'downloads',
-      types: [
-        {
-          description: "Aqua Player Data",
-          accept: {
-            "application/json": [".json"],
-          },
-        },
-      ],
-    });
+  let fileInput: HTMLInputElement;
+  const startImport = async (e: Event & { currentTarget: EventTarget & HTMLInputElement; }) => {
+    const file = e.currentTarget.files?.[0]
 
-    if (!fileHandle) return;
+    if (!file) return;
     load = true;
 
     try {
-      const file = await fileHandle.getFile();
       const data = JSON.parse(await file.text()) as any;
       const me = await USER.me();
 
@@ -68,6 +56,7 @@
       location.href = `/u/${me.username}/${game}`;
     } catch (e: any) {
       error = e.message;
+      console.error(e);
     } finally {
       conflict = null;
       load = false;
@@ -75,7 +64,7 @@
   }
 
   const getGameByCode = (code: string) => {
-    switch (code.toUpperCase()) {
+    switch (code?.toUpperCase()) {
       case 'SDEZ':
         return 'mai2';
       case 'SDHD':
@@ -86,9 +75,11 @@
   }
 </script>
 
-<ActionCard color="209, 124, 102" icon="bxs:file-import" on:click={startImport}>
+<ActionCard color="209, 124, 102" icon="bxs:file-import" on:click={() => fileInput.click()}>
     <h3>{t('home.import')}</h3>
     <span>{t('home.import-description')}</span>
+    <input type="file" accept=".json" bind:this={fileInput} style="display: none"
+      on:change={startImport}/>
 </ActionCard>
 
 <StatusOverlays {error} loading={load}/>
