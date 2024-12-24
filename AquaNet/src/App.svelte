@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Route, Router } from "svelte-routing";
   import Welcome from "./pages/Welcome.svelte";
-  import MaimaiRating from "./pages/MaimaiRating.svelte";
   import UserHome from "./pages/UserHome.svelte";
   import Home from "./pages/Home.svelte";
   import Ranking from "./pages/Ranking.svelte";
@@ -55,7 +54,6 @@
   <Route path="/ranking/:game" component={Ranking} />
   <Route path="/u/:username" component={UserHome} />
   <Route path="/u/:username/:game" component={UserHome} />
-  <Route path="/u/:username/:game/rating" component={MaimaiRating} />
   <Route path="/settings" component={Settings} />
 </Router>
 
