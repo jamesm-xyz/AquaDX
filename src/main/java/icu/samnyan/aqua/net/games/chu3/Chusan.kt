@@ -30,7 +30,7 @@ class Chusan(
         "trophyId" to { u, v -> u.trophyId = v.int },
         "mapIconId" to { u, v -> u.mapIconId = v.int },
         "voiceId" to { u, v -> u.voiceId = v.int },
-        "avatarItem" to { u, v -> v.split(':', limit=1).map { it.int }.let { (cat, data) -> when (cat) {
+        "avatarItem" to { u, v -> v.split(':', limit=2).map { it.int }.let { (cat, data) -> when (cat) {
             1 -> u.avatarWear = data
             2 -> u.avatarHead = data
             3 -> u.avatarFace = data

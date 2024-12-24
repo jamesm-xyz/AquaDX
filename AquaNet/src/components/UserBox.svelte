@@ -285,7 +285,7 @@
     value: number,
   ) {
     if (kind in kindMap) return { field: kindMap[kind], value: `${value}` }
-    return { field: "avatar", value: `${categories.indexOf(kind) + 1}:${value}` }
+    return { field: "avatarItem", value: `${categories.indexOf(kind) + 1}:${value}` }
   }
 
   USER.me().then(u => {
