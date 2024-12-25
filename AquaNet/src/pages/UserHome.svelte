@@ -50,49 +50,54 @@
   let allMusics: AllMusic
   let showDetailRank = false
   let isLoading = false
-  USER.isLoggedIn() && USER.me().then(u => me = u)
 
+  function init() {
+    USER.isLoggedIn() && USER.me().then(u => me = u)
 
-  CARD.userGames(username).then(games => {
-    if (!games[game]) {
-      // Find a valid game
-      const valid = Object.entries(games).filter(([g, valid]) => valid)
-      if (!valid || !valid[0]) return error = t("UserHome.NoValidGame")
-      window.location.href = `/u/${username}/${valid[0][0]}`
-    }
+    CARD.userGames(username).then(games => {
+      if (!games[game]) {
+        // Find a valid game
+        const valid = Object.entries(games).filter(([g, valid]) => valid)
+        if (!valid || !valid[0]) return error = t("UserHome.NoValidGame")
+        window.location.href = `/u/${username}/${valid[0][0]}`
+      }
 
-    Promise.all([
-      GAME.userSummary(username, game),
-      GAME.trend(username, game),
-      DATA.allMusic(game),
-    ]).then(([user, trend, music]) => {
-      console.log(user)
-      console.log(trend)
-      console.log(games)
+      Promise.all([
+        GAME.userSummary(username, game),
+        GAME.trend(username, game),
+        DATA.allMusic(game),
+      ]).then(([user, trend, music]) => {
+        console.log(user)
+        console.log(trend)
+        console.log(games)
 
-      // If game is wacca, divide all ratings by 10
-      if (game === 'wacca') {
-        user.rating /= 10
-        trend.forEach(it => it.rating /= 10)
-        user.recent.forEach(it => {
-          it.beforeRating /= 10
-          it.afterRating /= 10
+        // If game is wacca, divide all ratings by 10
+        if (game === 'wacca') {
+          user.rating /= 10
+          trend.forEach(it => it.rating /= 10)
+          user.recent.forEach(it => {
+            it.beforeRating /= 10
+            it.afterRating /= 10
+          })
+        }
+
+        const minDate = moment().subtract(TREND_DAYS, 'days').format("YYYY-MM-DD")
+        d = {user,
+          trend: trend.filter(it => it.date >= minDate && it.plays != 0),
+          recent: user.recent.map(it => {return {...music[it.musicId], ...it}}),
+          validGames: Object.entries(GAME_TITLE).filter(g => games[g[0] as GameName])
+        }
+        allMusics = music
+        renderCal(calElement, trend.map(it => {return {date: it.date, value: it.plays}})).then(() => {
+          // Scroll to the rightmost
+          calElement.scrollLeft = calElement.scrollWidth - calElement.clientWidth
         })
-      }
+      }).catch((e) => error = e.message);
+    }).catch((e) => { error = e.message; console.error(e) } );
+  }
 
-      const minDate = moment().subtract(TREND_DAYS, 'days').format("YYYY-MM-DD")
-      d = {user,
-        trend: trend.filter(it => it.date >= minDate && it.plays != 0),
-        recent: user.recent.map(it => {return {...music[it.musicId], ...it}}),
-        validGames: Object.entries(GAME_TITLE).filter(g => games[g[0] as GameName])
-      }
-      allMusics = music
-      renderCal(calElement, trend.map(it => {return {date: it.date, value: it.plays}})).then(() => {
-        // Scroll to the rightmost
-        calElement.scrollLeft = calElement.scrollWidth - calElement.clientWidth
-      })
-    }).catch((e) => error = e.message);
-  }).catch((e) => { error = e.message; console.error(e) } );
+  if (Object.keys(GAME_TITLE).includes(game)) init()
+  else error = t("UserHome.InvalidGame", {game})
 
   const setRival = (isAdd: boolean) => {
     isLoading = true

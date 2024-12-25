@@ -35,6 +35,7 @@ const zhUser: typeof EN_REF_USER = {
   'UserHome.B50': "B50",
   'UserHome.AddRival': "添加劲敌",
   'UserHome.RemoveRival': "移除劲敌",
+  'UserHome.InvalidGame': "游戏 ${game} 还不支持网页端查看。我们目前只支持舞萌、中二、Wacca 和音击。",
 }
 
 const zhWelcome: typeof EN_REF_Welcome = {

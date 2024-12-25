@@ -26,6 +26,7 @@ export const EN_REF_USER = {
   'UserHome.B50': 'B50',
   'UserHome.AddRival': "Add to Rival",
   'UserHome.RemoveRival': "Remove from Rival",
+  'UserHome.InvalidGame': "Game ${game} is not supported on the web UI yet. We only support maimai, chunithm, wacca, and ongeki for now.",
 }
 
 export const EN_REF_Welcome = {
