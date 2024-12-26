@@ -1,6 +1,7 @@
 package icu.samnyan.aqua.sega.chusan.handler
 
 import ext.*
+import icu.samnyan.aqua.sega.chusan.Chu3VersionHelper
 import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
 import icu.samnyan.aqua.sega.chusan.model.request.UpsertUserAll
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserCMission
@@ -27,6 +28,7 @@ class UpsertUserAllHandler(
     val mapper: StringMapper,
     val rp: Chu3Repos,
     val cardRepo: CardRepository,
+    val versionHelper: Chu3VersionHelper,
 ) : BaseHandler {
     val logger = logger()
 
@@ -43,6 +45,8 @@ class UpsertUserAllHandler(
                 userName = String(userName.toByteArray(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8)
                 userNameEx = ""
             }.also { rp.userData.saveAndFlush(it) }
+
+            versionHelper[u.lastClientId] = u.lastDataVersion
 
             // Set users
             listOfNotNull(
