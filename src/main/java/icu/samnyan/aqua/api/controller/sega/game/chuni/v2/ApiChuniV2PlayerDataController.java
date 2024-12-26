@@ -462,9 +462,9 @@ public class ApiChuniV2PlayerDataController {
         userItemList.forEach(x -> x.setUser(userData));
         userItemService.saveAll(userItemList);
 
-        List<UserMap> userMapList = data.getUserMapList();
-        userMapList.forEach(x -> x.setUser(userData));
-        userMapAreaService.saveAll(userMapList);
+//        List<UserMap> userMapList = data.getUserMapList();
+//        userMapList.forEach(x -> x.setUser(userData));
+//        userMapAreaService.saveAll(userMapList);
 
         List<UserMusicDetail> userMusicDetailList = data.getUserMusicDetailList();
         userMusicDetailList.forEach(x -> x.setUser(userData));

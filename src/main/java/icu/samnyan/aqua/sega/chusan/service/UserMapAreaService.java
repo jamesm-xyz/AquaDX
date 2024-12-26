@@ -26,19 +26,11 @@ public class UserMapAreaService {
         return userMapRepository.save(userMap);
     }
 
-    public List<UserMap> saveAll(Iterable<UserMap> userMap) {
-        return userMapRepository.saveAll(userMap);
-    }
-
     public List<UserMap> getByUser(Chu3UserData user) {
         return userMapRepository.findByUser(user);
     }
 
     public List<UserMap> getByUserId(String userId) {
         return userMapRepository.findByUser_Card_ExtId(Long.parseLong(userId));
-    }
-
-    public Optional<UserMap> getByUserAndMapAreaId(Chu3UserData user, int mapId) {
-        return userMapRepository.findTopByUserAndMapAreaIdOrderByIdDesc(user, mapId);
     }
 }

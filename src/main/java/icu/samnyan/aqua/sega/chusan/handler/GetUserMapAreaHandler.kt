@@ -24,7 +24,7 @@ class GetUserMapAreaHandler(
 
         val resultMap = mapOf(
             "userId" to userId,
-            "userMapAreaList" to userMapRepo.findAllUserMaps(userId?.toLong() ?: return "{}", maps)
+            "userMapAreaList" to userMapRepo.findAllByUserCardExtIdAndMapAreaIdIn(userId?.toLong() ?: return "{}", maps)
         )
 
         val json = mapper.write(resultMap)

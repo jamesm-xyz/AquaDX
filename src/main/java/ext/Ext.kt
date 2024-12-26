@@ -40,6 +40,8 @@ typealias Str = String
 typealias Bool = Boolean
 typealias JavaSerializable = java.io.Serializable
 
+typealias JDict = Map<String, Any?>
+
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Doc(
@@ -179,6 +181,7 @@ fun <K, V: Any> Map<K, V?>.recursiveNotNull(): Map<K, V> = mapNotNull { (k, v) -
 
 // Optionals
 operator fun <T> Optional<T>.invoke(): T? = orElse(null)
+fun <T> Optional<T>.expect(message: Str = "Value is not present") = orElseGet { (400 - message) }
 
 // Strings
 operator fun Str.get(range: IntRange) = substring(range.first, (range.last + 1).coerceAtMost(length))

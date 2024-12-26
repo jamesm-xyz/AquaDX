@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import ext.invoke
 import ext.mapApply
 import ext.minus
-import icu.samnyan.aqua.net.games.SEGA_USERNAME_CAHRS
 import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.general.service.CardService
 import icu.samnyan.aqua.sega.maimai2.handler.UploadUserPlaylogHandler.Companion.playBacklog
@@ -15,7 +14,6 @@ import icu.samnyan.aqua.sega.util.jackson.BasicMapper
 import lombok.AllArgsConstructor
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import kotlin.math.log
 
 /**
  * @author samnyan (privateamusement@protonmail.com)
@@ -70,12 +68,12 @@ class UpsertUserAllHandler(
         }
 
         // Set users
-        req.run { listOf(userExtend, userOption, userCharacterList, userMapList, userLoginBonusList, userItemList,
-            userMusicDetailList, userCourseList, userFriendSeasonRankingList, userFavoriteList).filterNotNull() }
-            .flatten().forEach {
-                logger.info(it.toString())
-                it.user = u
-            }
+        req.run {
+            listOfNotNull(
+                userExtend, userOption, userCharacterList, userMapList, userLoginBonusList, userItemList,
+                userMusicDetailList, userCourseList, userFriendSeasonRankingList, userFavoriteList
+            )
+        }.flatten().forEach { it.user = u }
 
         req.userExtend?.getOrNull(0)?.let {
             repos.userExtend.save(it.apply { id = repos.userExtend.findSingleByUser(u)()?.id ?: 0 })

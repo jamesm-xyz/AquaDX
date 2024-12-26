@@ -8,10 +8,10 @@ import icu.samnyan.aqua.sega.chusan.service.UserGeneralDataService;
 import icu.samnyan.aqua.sega.chusan.service.UserPlaylogService;
 import icu.samnyan.aqua.sega.general.model.response.UserRecentRating;
 import icu.samnyan.aqua.sega.util.jackson.StringMapper;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -22,25 +22,14 @@ import java.util.stream.Collectors;
  *
  * @author samnyan (privateamusement@protonmail.com)
  */
+@AllArgsConstructor
 @Component("ChusanGetUserRecentRatingHandler")
 public class GetUserRecentRatingHandler implements BaseHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(GetUserRecentRatingHandler.class);
-
-    private final StringMapper mapper;
-
     private final UserPlaylogService userPlaylogService;
     private final UserGeneralDataService userGeneralDataService;
 
-    @Autowired
-    public GetUserRecentRatingHandler(StringMapper mapper, UserPlaylogService userPlaylogService, UserGeneralDataService userGeneralDataService) {
-        this.mapper = mapper;
-        this.userPlaylogService = userPlaylogService;
-        this.userGeneralDataService = userGeneralDataService;
-    }
-
     @Override
-    public String handle(Map<String, ?> request) throws JsonProcessingException {
+    public Object handle(Map<String, ?> request) throws JsonProcessingException {
         String userId = (String) request.get("userId");
 
         Optional<UserGeneralData> recentOptional = userGeneralDataService.getByUserIdAndKey(userId, "recent_rating_list");
@@ -73,8 +62,6 @@ public class GetUserRecentRatingHandler implements BaseHandler {
         resultMap.put("length", ratingList.size());
         resultMap.put("userRecentRatingList", ratingList);
 
-        String json = mapper.write(resultMap);
-        logger.info("Response: " + json);
-        return json;
+        return resultMap;
     }
 }
