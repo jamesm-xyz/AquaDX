@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 
 
 @Component
-class Chu3VersionHelper(val db: Chu3Repos) {
+class ChusanVersionHelper(val db: Chu3Repos) {
     val log = logger()
 
     // Cache of <client id : version>

@@ -58,7 +58,7 @@ class ChusanServletController(
     val mapper: StringMapper,
     val db: Chu3Repos,
     val us: AquaUserServices,
-    val versionHelper: Chu3VersionHelper,
+    val versionHelper: ChusanVersionHelper,
 ) {
     val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
 
@@ -88,9 +88,7 @@ class ChusanServletController(
 
     // Fun!
     val initH = mutableMapOf<String, SpecialHandler>()
-    infix fun String.special(fn: SpecialHandler) = initH.set(this.lowercase(), fn)
-    operator fun String.invoke(fn: (Map<String, Any>) -> Any) = this special { fn(data) }
-    infix fun String.user(fn: (Map<String, Any>, Long) -> Any) = this { fn(it, parsing { it["userId"]!!.long }) }
+    infix operator fun String.invoke(fn: SpecialHandler) = initH.set(this.lowercase(), fn)
     infix fun String.static(fn: () -> Any) = mapper.write(fn()).let { resp -> this { resp } }
     val meow = init()
 
@@ -149,19 +147,19 @@ class ChusanServletController(
 
 fun ChusanServletController.init() {
     // Stub handlers
-    "GetGameRanking" { """{"type":"${it["type"]}","length":"0","gameRankingList":[]}""" }
-    "GetGameIdlist" { """{"type":"${it["type"]}","length":"0","gameIdlistList":[]}""" }
+    "GetGameRanking" { """{"type":"${data["type"]}","length":"0","gameRankingList":[]}""" }
+    "GetGameIdlist" { """{"type":"${data["type"]}","length":"0","gameIdlistList":[]}""" }
 
-    "GetTeamCourseSetting" { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseSettingList":[]}""" }
-    "GetTeamCourseRule" { """{"userId":"${it["userId"]}","length":"0","nextIndex":"0","teamCourseRuleList":[]}""" }
-    "GetUserCtoCPlay" { """{"userId":"${it["userId"]}","orderBy":"0","count":"0","userCtoCPlayList":[]}""" }
-    "GetUserRivalMusic" { """{"userId":"${it["userId"]}","rivalId":"0","length":"0","nextIndex":"0","userRivalMusicList":[]}""" }
-    "GetUserRivalData" { """{"userId":"${it["userId"]}","length":"0","userRivalData":[]}""" }
-    "GetUserRegion" { """{"userId":"${it["userId"]}","length":"0","userRegionList":[]}""" }
-    "GetUserPrintedCard" { """{"userId":"${it["userId"]}","length":0,"nextIndex":-1,"userPrintedCardList":[]}""" }
-    "GetUserSymbolChatSetting" { """{"userId":"${it["userId"]}","length":"0","symbolChatInfoList":[]}""" }
-    "GetUserNetBattleData" { """{"userId":"${it["userId"]}","userNetBattleData":{"recentNBSelectMusicList":[],"recentNBMusicList":[]}}""" }
-    "GetUserNetBattleRankingInfo" { """{"userId":"${it["userId"]}","length":"0","userNetBattleRankingInfoList":{}}""" }
+    "GetTeamCourseSetting" { """{"userId":"${data["userId"]}","length":"0","nextIndex":"0","teamCourseSettingList":[]}""" }
+    "GetTeamCourseRule" { """{"userId":"${data["userId"]}","length":"0","nextIndex":"0","teamCourseRuleList":[]}""" }
+    "GetUserCtoCPlay" { """{"userId":"${data["userId"]}","orderBy":"0","count":"0","userCtoCPlayList":[]}""" }
+    "GetUserRivalMusic" { """{"userId":"${data["userId"]}","rivalId":"0","length":"0","nextIndex":"0","userRivalMusicList":[]}""" }
+    "GetUserRivalData" { """{"userId":"${data["userId"]}","length":"0","userRivalData":[]}""" }
+    "GetUserRegion" { """{"userId":"${data["userId"]}","length":"0","userRegionList":[]}""" }
+    "GetUserPrintedCard" { """{"userId":"${data["userId"]}","length":0,"nextIndex":-1,"userPrintedCardList":[]}""" }
+    "GetUserSymbolChatSetting" { """{"userId":"${data["userId"]}","length":"0","symbolChatInfoList":[]}""" }
+    "GetUserNetBattleData" { """{"userId":"${data["userId"]}","userNetBattleData":{"recentNBSelectMusicList":[],"recentNBMusicList":[]}}""" }
+    "GetUserNetBattleRankingInfo" { """{"userId":"${data["userId"]}","length":"0","userNetBattleRankingInfoList":{}}""" }
 
     "CMUpsertUserPrint" { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintApi"}""" }
     "CMUpsertUserPrintlog" { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintlogApi"}""" }
@@ -171,45 +169,48 @@ fun ChusanServletController.init() {
     "GetMatchingState" { """{"matchingWaitState":{"restMSec":"30000","pollingInterval":"10","matchingMemberInfoList":[],"isFinish":"true"}}""" }
 
     // User handlers
-    "GetUserData" user { _, u ->
-        val user = db.userData.findByCard_ExtId(u)() ?: (400 - "User not found")
-        mapOf("userId" to u, "userData" to user)
+    "GetUserData" {
+        val user = db.userData.findByCard_ExtId(uid)() ?: (400 - "User not found")
+        mapOf("userId" to uid, "userData" to user)
     }
-    "GetUserOption" user { _, u ->
-        val userGameOption = db.userGameOption.findSingleByUser_Card_ExtId(u)() ?: (400 - "User not found")
-        mapOf("userId" to u, "userGameOption" to userGameOption)
+    "GetUserOption" {
+        val userGameOption = db.userGameOption.findSingleByUser_Card_ExtId(uid)() ?: (400 - "User not found")
+        mapOf("userId" to uid, "userGameOption" to userGameOption)
     }
-    "GetUserActivity" user { req, u ->
-        val kind = parsing { req["kind"]!!.int }
-        val a = db.userActivity.findAllByUser_Card_ExtIdAndKind(u, kind).sortedBy { -it.sortNumber }
-        mapOf("userId" to u, "length" to a.size, "kind" to kind, "userActivityList" to a)
+    "GetUserActivity" {
+        val kind = parsing { data["kind"]!!.int }
+        val a = db.userActivity.findAllByUser_Card_ExtIdAndKind(uid, kind).sortedBy { -it.sortNumber }
+        mapOf("userId" to uid, "length" to a.size, "kind" to kind, "userActivityList" to a)
     }
-    "GetUserCharge" user { _, u -> db.userCharge.findByUser_Card_ExtId(u)
-        .let { mapOf("userId" to u, "length" to it.size, "userChargeList" to it) }
+    "GetUserCharge" {
+        val lst = db.userCharge.findByUser_Card_ExtId(uid)
+        mapOf("userId" to uid, "length" to lst.size, "userChargeList" to lst)
     }
-    "GetUserDuel" user { _, u -> db.userDuel.findByUser_Card_ExtId(u)
-        .let { mapOf("userId" to u, "length" to it.size, "userDuelList" to it) }
+    "GetUserDuel" {
+        val lst = db.userDuel.findByUser_Card_ExtId(uid)
+        mapOf("userId" to uid, "length" to lst.size, "userDuelList" to lst)
     }
 
     // Other handlers
-    "GetGameGachaCardById" { db.gameGachaCard.findAllByGachaId(parsing { it["gachaId"]!!.int }).let {
-        mapOf("gachaId" to it.size, "length" to it.size, "isPickup" to false, "gameGachaCardList" to it, "emissionList" to empty, "afterCalcList" to empty)
+    "GetGameGachaCardById" { db.gameGachaCard.findAllByGachaId(parsing { data["gachaId"]!!.int }).let {
+        mapOf("gachaId" to it.size, "length" to it.size, "isPickup" to false, "gameGachaCardList" to it,
+            "emissionList" to empty, "afterCalcList" to empty)
     } }
 
-    "GetUserCMission" user { req, u ->
+    "GetUserCMission" {
         parsing { UserCMissionResp().apply {
-            userId = u
-            missionId = req["missionId"]!!.int
+            userId = uid
+            missionId = data["missionId"]!!.int
         } }.apply {
-            db.userCMission.findByUser_Card_ExtIdAndMissionId(u, missionId)()?.let {
+            db.userCMission.findByUser_Card_ExtIdAndMissionId(uid, missionId)()?.let {
                 point = it.point
-                userCMissionProgressList = db.userCMissionProgress.findByUser_Card_ExtIdAndMissionId(u, missionId)
+                userCMissionProgressList = db.userCMissionProgress.findByUser_Card_ExtIdAndMissionId(uid, missionId)
             }
         }
     }
 
     // Game settings
-    "GetGameSetting" special {
+    "GetGameSetting" {
         val version = data["version"].toString()
 
         // Fixed reboot time triggers chusan maintenance lockout, so let's try minime method which sets it dynamically
@@ -245,6 +246,11 @@ fun ChusanServletController.init() {
             "isDumpUpload" to false,
             "isAou" to false
         )
+    }
+
+    "GetUserCardPrintError" {
+
+
     }
 
     // Static
