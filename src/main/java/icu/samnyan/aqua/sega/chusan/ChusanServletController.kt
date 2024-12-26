@@ -4,6 +4,7 @@ import ext.*
 import icu.samnyan.aqua.net.utils.simpleDescribe
 import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
+import icu.samnyan.aqua.sega.chusan.model.request.UserCMissionResp
 import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.util.jackson.StringMapper
 import icu.samnyan.aqua.spring.Metrics
@@ -46,7 +47,6 @@ class ChusanServletController(
     val beginMatching: BeginMatchingHandler,
 
     // Luminous
-    val getUserCMission: GetUserCMissionHandler,
     val getGameMapAreaCondition: GetGameMapAreaConditionHandler,
 
     val mapper: StringMapper,
@@ -185,6 +185,18 @@ fun ChusanServletController.init() {
     "GetGameGachaCardById" { db.gameGachaCard.findAllByGachaId(parsing { it["gachaId"]!!.int }).let {
         mapOf("gachaId" to it.size, "length" to it.size, "isPickup" to false, "gameGachaCardList" to it, "emissionList" to empty, "afterCalcList" to empty)
     } }
+
+    "GetUserCMission" user { req, u ->
+        parsing { UserCMissionResp().apply {
+            userId = u
+            missionId = req["missionId"]!!.int
+        } }.apply {
+            db.userCMission.findByUser_Card_ExtIdAndMissionId(u, missionId)()?.let {
+                point = it.point
+                userCMissionProgressList = db.userCMissionProgress.findByUser_Card_ExtIdAndMissionId(u, missionId)
+            }
+        }
+    }
 
     // Static
     "GetGameEvent" static { db.gameEvent.findByEnable(true).let { mapOf("type" to 1, "length" to it.size, "gameEventList" to it) } }
