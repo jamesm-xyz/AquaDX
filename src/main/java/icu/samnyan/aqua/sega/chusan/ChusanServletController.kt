@@ -192,16 +192,17 @@ fun ChusanServletController.init() {
         val a = db.userActivity.findAllByUser_Card_ExtIdAndKind(uid, kind).sortedBy { -it.sortNumber }
         mapOf("userId" to uid, "length" to a.size, "kind" to kind, "userActivityList" to a)
     }
+
     "GetUserCharge" {
         val lst = db.userCharge.findByUser_Card_ExtId(uid)
         mapOf("userId" to uid, "length" to lst.size, "userChargeList" to lst)
     }
+
     "GetUserDuel" {
         val lst = db.userDuel.findByUser_Card_ExtId(uid)
         mapOf("userId" to uid, "length" to lst.size, "userDuelList" to lst)
     }
 
-    // Other handlers
     "GetGameGachaCardById" { db.gameGachaCard.findAllByGachaId(parsing { data["gachaId"]!!.int }).let {
         mapOf("gachaId" to it.size, "length" to it.size, "isPickup" to false, "gameGachaCardList" to it,
             "emissionList" to empty, "afterCalcList" to empty)
@@ -210,7 +211,7 @@ fun ChusanServletController.init() {
     "GetUserCMission" {
         parsing { UserCMissionResp().apply {
             userId = uid
-            missionId = data["missionId"]!!.int
+            missionId = parsing { data["missionId"]!!.int }
         } }.apply {
             db.userCMission.findByUser_Card_ExtIdAndMissionId(uid, missionId)()?.let {
                 point = it.point
@@ -260,6 +261,33 @@ fun ChusanServletController.init() {
 
         mapOf("userId" to uid, "kind" to kind, "length" to lst.size, "nextIndex" to -1, "userFavoriteItemList" to lst)
     }
+
+    val userPreviewKeys = ("lastLoginDate,userName,reincarnationNum,level,exp,playerRating,lastGameId,lastRomVersion," +
+        "lastDataVersion,lastPlayDate,trophyId,classEmblemMedal,classEmblemBase,battleRankId").split(',').toSet()
+
+    "GetUserPreview" {
+        val user = db.userData.findByCard_ExtId(uid)() ?: (400 - "User not found")
+        val chara = db.userCharacter.findByUserAndCharacterId(user, user.characterId)
+        val option = db.userGameOption.findSingleByUser(user)()
+        val userDict = mapper.toMap(mapper.write(user)).filterKeys { it in userPreviewKeys }
+
+        mapOf(
+            "userId" to uid, "isLogin" to false, "emoneyBrandId" to 0,
+            "userCharacter" to chara,
+            "playerLevel" to option?.playerLevel,
+            "rating" to option?.rating,
+            "headphone" to option?.headphone,
+            "chargeState" to 1, "userNameEx" to "", "banState" to 0,
+        ) + userDict
+    }
+
+    "GetUserMapArea" {
+        val maps = parsing { data["mapAreaIdList"] as List<Map<String, String>> }
+            .mapNotNull { it["mapAreaId"]?.toIntOrNull() }
+
+        mapOf("userId" to uid, "userMapAreaList" to db.userMap.findAllByUserCardExtIdAndMapAreaIdIn(uid, maps))
+    }
+
     // Game settings
     "GetGameSetting" {
         val version = data["version"].toString()
