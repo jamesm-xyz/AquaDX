@@ -270,6 +270,11 @@
             <div class="info">
               <div>{r.name ?? t("UserHome.UnknownSong")}</div>
               <div>
+                {#if r.isAllPerfect || r.isAllJustice}
+                  <img src="/assets/imgs/All Perfect.png" alt="All Perfect" />
+                {:else if r.isFullCombo}
+                  <img src="/assets/imgs/Full Combo.png" alt="Full Combo" />}
+                {/if}
                 <span class={`lv level-${r.level === 10 ? 3 : r.level}`}>
                   { r.notes?.[r.level === 10 ? 0 : r.level]?.lv?.toFixed(1) ?? '-' }
                 </span>
@@ -498,6 +503,12 @@
           // Make song score and rank not wrap
           > div:last-child
             white-space: nowrap
+            display: flex
+            gap: 10px
+
+            img
+              height: 1.5em
+              width: 1.5em
 
           @media (max-width: vars.$w-mobile)
             flex-direction: column
@@ -533,7 +544,6 @@
           background: rgba(var(--lv-color), 0.6)
           padding: 0 6px
           border-radius: vars.$border-radius
-          margin-right: 10px
 
         span
           display: inline-block
@@ -541,7 +551,7 @@
 
         // Vertical table-like alignment
         span.rank-text
-          min-width: 40px
+          min-width: 38px
         span.rank-num
           min-width: 60px
         span.dx-change
