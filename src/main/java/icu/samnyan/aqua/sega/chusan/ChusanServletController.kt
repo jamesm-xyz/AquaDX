@@ -14,6 +14,8 @@ import icu.samnyan.aqua.spring.Metrics
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.collections.set
 import kotlin.reflect.full.declaredMemberProperties
 
@@ -25,7 +27,6 @@ import kotlin.reflect.full.declaredMemberProperties
 @API(value = ["/g/chu3/{version}/ChuniServlet", "/g/chu3/{version}"])
 class ChusanServletController(
     val gameLogin: GameLoginHandler,
-    val getGameSetting: GetGameSettingHandler,
     val getUserCharacter: GetUserCharacterHandler,
     val getUserCourse: GetUserCourseHandler,
     val getUserFavoriteItem: GetUserFavoriteItemHandler,
@@ -85,7 +86,7 @@ class ChusanServletController(
     // Fun!
     val initH = mutableMapOf<String, SpecialHandler>()
     infix fun String.special(fn: SpecialHandler) = initH.set(this.lowercase(), fn)
-    operator fun String.invoke(fn: (Map<String, Any>) -> Any) = this special { fn(it.data) }
+    operator fun String.invoke(fn: (Map<String, Any>) -> Any) = this special { fn(data) }
     infix fun String.user(fn: (Map<String, Any>, Long) -> Any) = this { fn(it, parsing { it["userId"]!!.long }) }
     infix fun String.static(fn: () -> Any) = mapper.write(fn()).let { resp -> this { resp } }
     val meow = init()
@@ -202,6 +203,43 @@ fun ChusanServletController.init() {
                 userCMissionProgressList = db.userCMissionProgress.findByUser_Card_ExtIdAndMissionId(u, missionId)
             }
         }
+    }
+
+    // Game settings
+    "GetGameSetting" special {
+        val version = data["version"].toString()
+        // Fixed reboot time triggers chusan maintenance lockout, so let's try minime method which sets it dynamically
+        // Special thanks to skogaby
+        // Hardcode so that the reboot time always started 3 hours ago and ended 2 hours ago
+        val fmt = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
+
+        // Get the request url as te address
+        val addr = req.requestURI.removeSuffix("GetGameSettingApi")
+
+        mapOf(
+            "gameSetting" to mapOf(
+                "romVersion" to "$version.00",  // Chusan checks these two versions to determine if it can enable game modes
+                "dataVersion" to "$version.00",
+                "isMaintenance" to false,
+                "requestInterval" to 0,
+                "rebootStartTime" to LocalDateTime.now().minusHours(3).format(fmt),
+                "rebootEndTime" to LocalDateTime.now().minusHours(2).format(fmt),
+                "isBackgroundDistribute" to false,
+                "maxCountCharacter" to 300,
+                "maxCountItem" to 300,
+                "maxCountMusic" to 300,
+                "matchStartTime" to LocalDateTime.now().minusHours(1).format(fmt),
+                "matchEndTime" to LocalDateTime.now().plusHours(1).format(fmt),
+                "matchTimeLimit" to 10,
+                "matchErrorLimit" to 10,
+                "matchingUri" to addr,
+                "matchingUriX" to addr,
+                "udpHolePunchUri" to addr,
+                "reflectorUri" to addr
+            ),
+            "isDumpUpload" to false,
+            "isAou" to false
+        )
     }
 
     // Static

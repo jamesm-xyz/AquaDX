@@ -16,5 +16,5 @@ data class RequestContext(
     val data: Map<String, Any>,
 )
 
-typealias SpecialHandler = (RequestContext) -> Any?
+typealias SpecialHandler = RequestContext.() -> Any?
 fun BaseHandler.toSpecial() = { ctx: RequestContext -> handle(ctx.data) }
