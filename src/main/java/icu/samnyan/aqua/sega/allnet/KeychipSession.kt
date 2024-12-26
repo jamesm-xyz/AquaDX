@@ -54,7 +54,7 @@ interface KeychipSessionRepo : JpaRepository<KeychipSession, String> {
 
 @Service
 class KeychipSessionService(
-    val keychipSessionRepo: KeychipSessionRepo,
+    val repo: KeychipSessionRepo,
     val props: AllNetProps
 ) {
     val logger = LoggerFactory.getLogger(KeychipSessionService::class.java)
@@ -66,7 +66,7 @@ class KeychipSessionService(
     suspend fun cleanup() = async {
         logger.info("!!! Keychip session cleanup !!!")
         val expire = System.currentTimeMillis() - props.keychipSesExpire
-        keychipSessionRepo.deleteAllByLastUseBefore(expire)
+        repo.deleteAllByLastUseBefore(expire)
     }
 
     /**
@@ -74,14 +74,14 @@ class KeychipSessionService(
      */
     fun new(user: AquaNetUser?, gameId: String): KeychipSession {
         val session = KeychipSession(user = user, gameId = gameId)
-        return keychipSessionRepo.save(session)
+        return repo.save(session)
     }
 
     /**
      * Find a session. If found, renew the last use time.
      */
-    fun find(token: String) = keychipSessionRepo.findByToken(token)?.apply {
+    fun find(token: String) = repo.findByToken(token)?.apply {
         lastUse = System.currentTimeMillis()
-        keychipSessionRepo.save(this)
+        repo.save(this)
     }
 }
