@@ -127,7 +127,7 @@ class ChusanServletController(
             logger.info("Chu3 > $api no-op")
             return """{"returnCode":"1"}"""
         }
-        logger.info("Chu3 < $api : $data")
+        logger.info("Chu3 < $api : ${data.toJson()}")
 
         return try {
             Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
