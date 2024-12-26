@@ -31,32 +31,18 @@ import kotlin.reflect.full.declaredMemberProperties
 @API(value = ["/g/chu3/{version}/ChuniServlet", "/g/chu3/{version}"])
 class ChusanServletController(
     val gameLogin: GameLoginHandler,
-    val getUserCharacter: GetUserCharacterHandler,
-    val getUserCourse: GetUserCourseHandler,
-    val getUserFavoriteItem: GetUserFavoriteItemHandler,
-    val getUserItem: GetUserItemHandler,
     val getUserLoginBonus: GetUserLoginBonusHandler,
-    val getUserMapArea: GetUserMapAreaHandler,
     val getUserMusic: GetUserMusicHandler,
-    val getUserPreview: GetUserPreviewHandler,
     val getUserRecentRating: GetUserRecentRatingHandler,
     val getUserTeam: GetUserTeamHandler,
     val upsertUserAll: UpsertUserAllHandler,
-    val upsertUserChargelog: UpsertUserChargelogHandler,
-    val getUserCardPrintError: GetUserCardPrintErrorHandler,
     val cmGetUserPreview: CMGetUserPreviewHandler,
     val cmGetUserData: CMGetUserDataHandler,
     val cmGetUserCharacter: CMGetUserCharacterHandler,
-    val getUserGacha: GetUserGachaHandler,
     val cmGetUserItem: CMGetUserItemHandler,
-    val rollGacha: RollGachaHandler,
     val cmUpsertUserGacha: CMUpsertUserGachaHandler,
     val cmUpsertUserPrintSubtract: CMUpsertUserPrintSubtractHandler,
     val cmUpsertUserPrintCancel: CMUpsertUserPrintCancelHandler,
-    val beginMatching: BeginMatchingHandler,
-
-    // Luminous
-    val getGameMapAreaCondition: GetGameMapAreaConditionHandler,
 
     val mapper: StringMapper,
     val db: Chu3Repos,
@@ -168,7 +154,6 @@ fun ChusanServletController.init() {
     "CMUpsertUserPrint" { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintApi"}""" }
     "CMUpsertUserPrintlog" { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintlogApi"}""" }
 
-    // Matching
     // Matching TODO: Actually implement this
     "EndMatching" { """{"matchingResult":{"matchingMemberInfoList":[],"matchingMemberRoleList":[],"reflectorUri":""}}""" }
     "GetMatchingState" { """{"matchingWaitState":{"restMSec":"30000","pollingInterval":"10","matchingMemberInfoList":[],"isFinish":"true"}}""" }
@@ -201,6 +186,17 @@ fun ChusanServletController.init() {
     "GetUserDuel" {
         val lst = db.userDuel.findByUser_Card_ExtId(uid)
         mapOf("userId" to uid, "length" to lst.size, "userDuelList" to lst)
+    }
+
+    "GetUserGacha" {
+        val lst = db.userGacha.findByUser_Card_ExtId(uid)
+        mapOf("userId" to uid, "length" to lst.size, "userGachaList" to lst)
+    }
+
+    "RollGacha" {
+        val (gachaId, times) = parsing { data["gachaId"]!!.int to data["times"]!!.int }
+        val lst = db.gameGachaCard.findAllByGachaId(gachaId).shuffled().take(times)
+        mapOf("length" to lst.size, "gameGachaCardList" to lst)
     }
 
     "GetGameGachaCardById" { db.gameGachaCard.findAllByGachaId(parsing { data["gachaId"]!!.int }).let {

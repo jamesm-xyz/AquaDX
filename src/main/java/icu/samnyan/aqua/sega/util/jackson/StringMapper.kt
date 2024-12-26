@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter
 class StringMapper {
     fun write(o: Any?) = STRING_MAPPER.writeValueAsString(o)
     fun <T> convert(map: Any?, toClass: Class<T>?) = STRING_MAPPER.convertValue(map, toClass)
+    final inline fun <reified T> convert(map: Any?) = convert(map, T::class.java)
     fun toMap(obj: Any?) = STRING_MAPPER.convertValue(obj, object : TypeReference<LinkedHashMap<String, Any>>() {})
 
     companion object {
