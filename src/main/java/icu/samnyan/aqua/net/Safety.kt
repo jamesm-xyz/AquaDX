@@ -57,7 +57,7 @@ class AquaNetSafetyService(
         val map = safety.findAll().associateBy { it.content.lowercase().trim() }.toMutableMap()
 
         // Process unseen content with OpenAI
-        val news = contents.filter { it.lowercase().trim() !in map }.map { inp ->
+        val news = contents.filter { it.lowercase().trim() !in map && it !in contents }.map { inp ->
             HTTP.post("https://api.openai.com/v1/moderations") {
                 header("Authorization", "Bearer ${openAIConfig.apiKey}")
                 header("Content-Type", "application/json")
