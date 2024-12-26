@@ -49,6 +49,9 @@ class Chusan(
 
         val ratingComposition = mapOf(
             "recent" to (extra["recent_rating_list"] ?: ""),
+            "best30" to (extra["rating_base_list"] ?: ""),
+            "hot10" to (extra["rating_hot_list"] ?: ""),
+            "next10" to (extra["rating_next_list"] ?: ""),
         )
 
         genericUserSummary(card, ratingComposition)
