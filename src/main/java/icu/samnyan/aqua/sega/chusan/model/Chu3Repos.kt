@@ -60,6 +60,7 @@ interface Chu3UserCharacterRepo : Chu3UserLinked<UserCharacter> {
 
 interface Chu3UserChargeRepo : Chu3UserLinked<UserCharge> {
     fun findByUserAndChargeId(extId: Chu3UserData, chargeId: Int): Optional<UserCharge>
+    fun findByUser_Card_ExtIdAndChargeId(ext: Long, chargeId: Int): UserCharge?
 }
 
 interface Chu3UserCourseRepo : Chu3UserLinked<UserCourse> {

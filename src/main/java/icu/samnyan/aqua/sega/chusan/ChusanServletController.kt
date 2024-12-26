@@ -258,9 +258,13 @@ fun ChusanServletController.init() {
         )
     }
 
-    "GetUserCardPrintError" {
-
-
+    // Upserts
+    "UpsertUserChargelog" {
+        val charge = parsing { mapper.convert<UserCharge>(data["userCharge"] as JDict) }
+        charge.user = db.userData.findByCard_ExtId(uid)() ?: (400 - "User not found")
+        charge.id = db.userCharge.findByUser_Card_ExtIdAndChargeId(uid, charge.chargeId)?.id ?: 0
+        db.userCharge.save(charge)
+        """{"returnCode":"1"}"""
     }
 
     // Static
