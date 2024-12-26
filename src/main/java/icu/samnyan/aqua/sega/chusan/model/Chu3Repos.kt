@@ -67,7 +67,9 @@ interface Chu3UserCourseRepo : Chu3UserLinked<UserCourse> {
     fun findByUserAndCourseId(user: Chu3UserData, courseId: Int): UserCourse?
 }
 
-interface Chu3UserDataRepo : GenericUserDataRepo<Chu3UserData>
+interface Chu3UserDataRepo : GenericUserDataRepo<Chu3UserData> {
+    fun findTopByLastClientIdOrderByLastPlayDateDesc(lastClientId: String): Chu3UserData?
+}
 
 interface Chu3UserDuelRepo : Chu3UserLinked<UserDuel> {
     fun findTopByUserAndDuelIdOrderByIdDesc(user: Chu3UserData, duelId: Int): Optional<UserDuel>
