@@ -175,7 +175,7 @@ class AllNet(
 
     private fun switchUri(localAddr: Str, localPort: Str, gameId: Str, ver: Str, session: Str?): Str {
         val addr = props.host.ifBlank { localAddr } +
-            if (props.hidePort) "" else ":${props.port?.toString() ?: localPort}"
+            if (props.hidePort) "" else ":${props.port ?: localPort}"
 
         // If keychip authentication is enabled, the game URLs will be set to /gs/{token}/{game}/...
         val base = if (session != null) "gs/$session" else "g"
