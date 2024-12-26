@@ -12,6 +12,7 @@ class UserCMissionProgress : Chu3UserEntity() {
     @Column(name = "mission_id")
     @JsonIgnore
     var missionId = 0
+    @Column(name = "`order`")
     var order = 0
     var stage = 0
     var progress = 0
