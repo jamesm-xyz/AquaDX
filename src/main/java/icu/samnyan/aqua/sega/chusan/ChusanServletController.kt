@@ -6,6 +6,9 @@ import icu.samnyan.aqua.net.utils.simpleDescribe
 import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
 import icu.samnyan.aqua.sega.chusan.model.request.UserCMissionResp
+import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingMemberInfo
+import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingWaitState
+import icu.samnyan.aqua.sega.chusan.model.userdata.UserCharge
 import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.general.RequestContext
 import icu.samnyan.aqua.sega.general.SpecialHandler
@@ -145,6 +148,7 @@ class ChusanServletController(
 }
 
 
+@Suppress("UNCHECKED_CAST")
 fun ChusanServletController.init() {
     // Stub handlers
     "GetGameRanking" { """{"type":"${data["type"]}","length":"0","gameRankingList":[]}""" }
@@ -165,8 +169,14 @@ fun ChusanServletController.init() {
     "CMUpsertUserPrintlog" { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintlogApi"}""" }
 
     // Matching
+    // Matching TODO: Actually implement this
     "EndMatching" { """{"matchingResult":{"matchingMemberInfoList":[],"matchingMemberRoleList":[],"reflectorUri":""}}""" }
     "GetMatchingState" { """{"matchingWaitState":{"restMSec":"30000","pollingInterval":"10","matchingMemberInfoList":[],"isFinish":"true"}}""" }
+
+    "BeginMatching" {
+        val memberInfo = parsing { mapper.convert<MatchingMemberInfo>(data["matchingMemberInfo"] as JDict) }
+        mapOf("roomId" to 1, "matchingWaitState" to MatchingWaitState(listOf(memberInfo)))
+    }
 
     // User handlers
     "GetUserData" {
