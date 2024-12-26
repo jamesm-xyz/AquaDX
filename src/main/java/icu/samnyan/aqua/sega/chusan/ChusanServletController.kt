@@ -214,7 +214,8 @@ fun ChusanServletController.init() {
         val fmt = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
 
         // Get the request url as te address
-        val addr = req.requestURL.toString().removeSuffix("GetGameSettingApi")
+        val addr = (req.getHeader("wrapper original url") ?: req.requestURL.toString())
+            .removeSuffix("GetGameSettingApi")
 
         mapOf(
             "gameSetting" to mapOf(

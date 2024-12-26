@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Configuration
@@ -82,11 +81,16 @@ class TokenChecker(
 /**
  * Request wrapper for rewriting the URI after token check.
  */
-class RewriteWrapper(req: HttpServletRequest, token: Str) : HttpServletRequestWrapper(req) {
+class RewriteWrapper(val req: HttpServletRequest, token: Str) : HttpServletRequestWrapper(req) {
     val replace = "/gs/$token/"
     val newUri = req.requestURI.replace(replace, "/g/")
     val newUrl = req.requestURL.toString().replace(replace, "/g/")
     val newSp = req.servletPath.replace(replace, "/g/")
+
+    override fun getHeader(name: String): String? {
+        if (name == "wrapper original url") return req.requestURL.toString()
+        return super.getHeader(name)
+    }
 
     override fun getRequestURI() = newUri
     override fun getRequestURL() = StringBuffer(newUrl)
