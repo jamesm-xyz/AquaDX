@@ -3,7 +3,6 @@ package icu.samnyan.aqua.sega.chusan.service;
 import icu.samnyan.aqua.sega.chusan.model.Chu3GameGachaCardRepo;
 import icu.samnyan.aqua.sega.chusan.model.gamedata.GameGachaCard;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,11 +20,6 @@ public class GameGachaCardService {
     @Autowired
     public GameGachaCardService(Chu3GameGachaCardRepo gameGachaCardRepository) {
         this.gameGachaCardRepository = gameGachaCardRepository;
-    }
-
-    @Cacheable("gachaCard")
-    public List<GameGachaCard> getAll() {
-        return gameGachaCardRepository.findAll();
     }
 
     public List<GameGachaCard> getRandomCards(int gachaId, int times) {

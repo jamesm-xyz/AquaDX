@@ -41,8 +41,4 @@ public class UserCourseService {
         Pageable page = PageRequest.of(pageNum, maxCount);
         return userCourseRepository.findByUser_Card_ExtId(Long.parseLong(userId), page);
     }
-
-    public Optional<UserCourse> getByUserAndCourseId(Chu3UserData user, int courseId) {
-        return userCourseRepository.findTopByUserAndCourseIdOrderByIdDesc(user, courseId);
-    }
 }

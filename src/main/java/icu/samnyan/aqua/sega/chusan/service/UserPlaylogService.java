@@ -24,14 +24,6 @@ public class UserPlaylogService {
         this.userPlaylogRepository = userPlaylogRepository;
     }
 
-    public UserPlaylog save(UserPlaylog userPlaylog) {
-        return userPlaylogRepository.save(userPlaylog);
-    }
-
-    public List<UserPlaylog> saveAll(List<UserPlaylog> userPlaylogList) {
-        return userPlaylogRepository.saveAll(userPlaylogList);
-    }
-
     public Page<UserPlaylog> getRecentPlays(String userId, Pageable page) {
         return userPlaylogRepository.findByUserCardExtId(Long.parseLong(userId), page);
     }

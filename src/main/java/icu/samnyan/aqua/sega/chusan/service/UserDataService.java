@@ -26,16 +26,8 @@ public class UserDataService {
         return userDataRepository.save(userData);
     }
 
-    public Chu3UserData saveAndFlushUserData(Chu3UserData userData) {
-        return userDataRepository.saveAndFlush(userData);
-    }
-
     public Optional<Chu3UserData> getUserByExtId(String aimeId) {
         return userDataRepository.findByCard_ExtId(Long.parseLong(aimeId));
-    }
-
-    public Optional<Chu3UserData> getUserByCard(Card card) {
-        return Optional.ofNullable(userDataRepository.findByCard(card));
     }
 
     public void updateLoginTime(Chu3UserData userData) {

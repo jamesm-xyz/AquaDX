@@ -22,18 +22,6 @@ public class UserDuelService {
         this.userDuelRepository = userDuelRepository;
     }
 
-    public Optional<UserDuel> getByUserAndDuelId(Chu3UserData user, int duelId) {
-        return userDuelRepository.findTopByUserAndDuelIdOrderByIdDesc(user, duelId);
-    }
-
-    public UserDuel save(UserDuel userDuel) {
-        return userDuelRepository.save(userDuel);
-    }
-
-    public List<UserDuel> saveAll(Iterable<UserDuel> userDuel) {
-        return userDuelRepository.saveAll(userDuel);
-    }
-
     public List<UserDuel> getByUserId(String userId) {
         return userDuelRepository.findByUser_Card_ExtId(Long.parseLong(userId));
     }

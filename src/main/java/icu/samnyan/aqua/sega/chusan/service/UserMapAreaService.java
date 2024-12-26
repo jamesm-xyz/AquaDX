@@ -22,14 +22,6 @@ public class UserMapAreaService {
         this.userMapRepository = userMapRepository;
     }
 
-    public UserMap save(UserMap userMap) {
-        return userMapRepository.save(userMap);
-    }
-
-    public List<UserMap> getByUser(Chu3UserData user) {
-        return userMapRepository.findByUser(user);
-    }
-
     public List<UserMap> getByUserId(String userId) {
         return userMapRepository.findByUser_Card_ExtId(Long.parseLong(userId));
     }

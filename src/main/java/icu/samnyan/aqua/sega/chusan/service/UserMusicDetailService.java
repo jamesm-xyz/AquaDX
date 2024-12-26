@@ -24,14 +24,6 @@ public class UserMusicDetailService {
         this.userMusicDetailRepository = userMusicDetailRepository;
     }
 
-    public UserMusicDetail save(UserMusicDetail userMusicDetail) {
-        return userMusicDetailRepository.save(userMusicDetail);
-    }
-
-    public List<UserMusicDetail> saveAll(Iterable<UserMusicDetail> userMusicDetail) {
-        return userMusicDetailRepository.saveAll(userMusicDetail);
-    }
-
     public List<UserMusicDetail> getByUserId(String userId) {
         return userMusicDetailRepository.findByUser_Card_ExtId(Long.parseLong(userId));
     }
@@ -42,9 +34,5 @@ public class UserMusicDetailService {
 
     public List<UserMusicDetail> getByUserIdAndMusicId(String userId, int musicId) {
         return userMusicDetailRepository.findByUser_Card_ExtIdAndMusicId(Long.parseLong(userId), musicId);
-    }
-
-    public Optional<UserMusicDetail> getByUserAndMusicIdAndLevel(Chu3UserData user, int musicId, int level) {
-        return userMusicDetailRepository.findTopByUserAndMusicIdAndLevelOrderByIdDesc(user, musicId, level);
     }
 }
