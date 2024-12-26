@@ -54,6 +54,7 @@ class AquaNetSafetyService(
      */
     suspend fun isSafeBatch(rawContents: List<String>): List<Boolean> {
         val contents = rawContents.map { Normalizer.normalize(it, Normalizer.Form.NFKC) }
+        val origMap = safety.findAll().associateBy { it.content }.toMutableMap()
         val map = safety.findAll().associateBy { it.content.lowercase().trim() }.toMutableMap()
 
         // Process unseen content with OpenAI
@@ -72,8 +73,9 @@ class AquaNetSafetyService(
             }
         }
         if (news.isNotEmpty()) safety.saveAll(news)
+        news.associateByTo(origMap) { it.content }
         news.associateByTo(map) { it.content.lowercase().trim() }
 
-        return contents.map { map[it.lowercase().trim()]!!.safe }
+        return contents.map { map[it.lowercase().trim()]?.safe ?: origMap[it]?.safe ?: true }
     }
 }
