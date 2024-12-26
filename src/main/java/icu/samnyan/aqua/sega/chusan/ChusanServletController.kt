@@ -219,6 +219,47 @@ fun ChusanServletController.init() {
         }
     }
 
+    "GetUserCardPrintError" {
+        val lst = db.userCardPrintState.findByUser_Card_ExtIdAndHasCompleted(uid, false)
+        mapOf("userId" to uid, "length" to lst.size, "userCardPrintStateList" to lst)
+    }
+
+    "GetUserCharacter" {
+        // Let's try not paging at all
+        val lst = db.userCharacter.findByUser_Card_ExtId(uid)
+        mapOf("userId" to uid, "length" to lst.size, "nextIndex" to -1, "userCharacterList" to lst)
+    }
+
+    "GetUserCourse" {
+        val lst = db.userCourse.findByUser_Card_ExtId(uid)
+        mutableMapOf("userId" to uid, "length" to lst.size, "userCourseList" to lst).apply {
+            if (data.containsKey("nextIndex")) this["nextIndex"] = -1
+        }
+    }
+
+    "GetUserItem" {
+        val kind = parsing { (data["nextIndex"]!!.long % 10000000000L).int }
+        val lst = db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind)
+        mapOf("userId" to uid, "length" to lst.size, "nextIndex" to -1, "itemKind" to kind, "userItemList" to lst)
+    }
+
+    "GetUserFavoriteItem" {
+        val kind = parsing { data["kind"]!!.int }
+
+        // TODO: Actually store this info at UpsertUserAll
+        val fav = when (kind) {
+            1 -> "favorite_music"
+            3 -> "favorite_chara"
+            else -> null
+        }?.let { db.userGeneralData.findByUser_Card_ExtIdAndPropertyKey(uid, it)() }?.propertyValue
+
+        val lst = fav?.let {
+            if (it.isNotBlank() && it.contains(",")) it.split(",").map { it.int }
+            else null
+        } ?: emptyList()
+
+        mapOf("userId" to uid, "kind" to kind, "length" to lst.size, "nextIndex" to -1, "userFavoriteItemList" to lst)
+    }
     // Game settings
     "GetGameSetting" {
         val version = data["version"].toString()
