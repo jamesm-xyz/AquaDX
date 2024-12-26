@@ -1,6 +1,7 @@
 package icu.samnyan.aqua.sega.chusan
 
 import ext.*
+import icu.samnyan.aqua.net.db.AquaUserServices
 import icu.samnyan.aqua.net.utils.simpleDescribe
 import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
@@ -56,6 +57,8 @@ class ChusanServletController(
 
     val mapper: StringMapper,
     val db: Chu3Repos,
+    val us: AquaUserServices,
+    val versionHelper: Chu3VersionHelper,
 ) {
     val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
 
@@ -208,6 +211,7 @@ fun ChusanServletController.init() {
     // Game settings
     "GetGameSetting" special {
         val version = data["version"].toString()
+
         // Fixed reboot time triggers chusan maintenance lockout, so let's try minime method which sets it dynamically
         // Special thanks to skogaby
         // Hardcode so that the reboot time always started 3 hours ago and ended 2 hours ago
@@ -220,7 +224,7 @@ fun ChusanServletController.init() {
         mapOf(
             "gameSetting" to mapOf(
                 "romVersion" to "$version.00",  // Chusan checks these two versions to determine if it can enable game modes
-                "dataVersion" to "$version.00",
+                "dataVersion" to versionHelper[data["clientId"].toString()],
                 "isMaintenance" to false,
                 "requestInterval" to 0,
                 "rebootStartTime" to LocalDateTime.now().minusHours(3).format(fmt),
