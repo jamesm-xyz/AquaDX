@@ -28,8 +28,6 @@ public class GameLoginHandler implements BaseHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GameLoginHandler.class);
 
-    private final StringMapper mapper;
-
     private boolean enableLoginBonus = false;
 
     private final UserDataService userDataService;
@@ -50,7 +48,6 @@ public class GameLoginHandler implements BaseHandler {
                             GameLoginBonusService gameLoginBonusService,
                             UserLoginBonusService userLoginBonusService
                             ) {
-        this.mapper = mapper;
         this.enableLoginBonus = enableLoginBonus;
         this.userDataService = userDataService;
         this.userItemService = userItemService;

@@ -408,88 +408,19 @@ public class ApiChuniV2PlayerDataController {
         return new ResponseEntity<>(data, headers, HttpStatus.OK);
     }
 
-    @PostMapping("import")
-    public ResponseEntity<Object> importAllUserData(@RequestBody ChuniDataImport data) {
-        if(!data.getGameId().equals("SDHD")) {
-            return ResponseEntity.unprocessableEntity().body(new MessageResponse("Wrong Game Profile, Expected 'SDHD', Get " + data.getGameId()));
-        }
-
-        ExternalUserData exUser = data.getUserData();
-
-        Optional<Card> cardOptional = cardService.getCardByAccessCode(exUser.getAccessCode());
-        Card card;
-        if (cardOptional.isPresent()) {
-            if (userDataService.getUserByCard(cardOptional.get()).isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new MessageResponse("This card already has a chusan profile."));
-            } else {
-                card = cardOptional.get();
-            }
-        } else {
-            card = cardService.registerByAccessCode(exUser.getAccessCode());
-        }
-
-        Chu3UserData userData = mapper.convert(exUser, new TypeReference<>() {
-        });
-        userData.setCard(card);
-        userDataService.saveAndFlushUserData(userData);
-
-        List<UserActivity> userActivityList = data.getUserActivityList();
-        userActivityList.forEach(x -> x.setUser(userData));
-        userActivityService.saveAll(userActivityList);
-
-        List<UserCharacter> userCharacterList = data.getUserCharacterList();
-        userCharacterList.forEach(x -> x.setUser(userData));
-        userCharacterService.saveAll(userCharacterList);
-
-        List<UserCharge> userChargeList = data.getUserChargeList();
-        userCharacterList.forEach(x -> x.setUser(userData));
-        userChargeService.saveAll(userChargeList);
-
-        List<UserCourse> userCourseList = data.getUserCourseList();
-        userCourseList.forEach(x -> x.setUser(userData));
-        userCourseService.saveAll(userCourseList);
-
-        List<UserDuel> userDuelList = data.getUserDuelList();
-        userDuelList.forEach(x -> x.setUser(userData));
-        userDuelService.saveAll(userDuelList);
-
-        UserGameOption userGameOption = data.getUserGameOption();
-        userGameOption.setUser(userData);
-        userGameOptionService.save(userGameOption);
-
-        List<UserItem> userItemList = data.getUserItemList();
-        userItemList.forEach(x -> x.setUser(userData));
-        userItemService.saveAll(userItemList);
-
-//        List<UserMap> userMapList = data.getUserMapList();
-//        userMapList.forEach(x -> x.setUser(userData));
-//        userMapAreaService.saveAll(userMapList);
-
-        List<UserMusicDetail> userMusicDetailList = data.getUserMusicDetailList();
-        userMusicDetailList.forEach(x -> x.setUser(userData));
-        userMusicDetailService.saveAll(userMusicDetailList);
-
-        List<UserPlaylog> userPlaylogList = data.getUserPlaylogList();
-        userPlaylogList.forEach(x -> x.setUser(userData));
-        userPlaylogService.saveAll(userPlaylogList);
-
-        return ResponseEntity.ok(new MessageResponse("Import successfully, aimeId: " + card.getExtId()));
-    }
-
     private int getLevelBase(int level, int levelDecimal) {
         return level * 100 + levelDecimal;
     }
 
-    private int calculateRating(int levelBase, int score, VersionInfo version) {
-        if (score >= 1009000) return levelBase + 215; //SSS+
-        if (score >= 1007500) return levelBase + 200 + (score - 1007500) / 100; //SSS
-        if (score >= 1005000) return levelBase + 150 + (score - 1005000) / 50; //SS+
-        if (score >= 1000000) return levelBase + 100 + (score - 1000000) / 100; //SS
-        if (score >= 975000) return levelBase + (score - 975000) / 250; //S+, S
-        if (score >= 925000) return levelBase - 300 + (score - 925000) * 3 / 500; //AA
-        if (score >= 900000) return levelBase - 500 + (score - 900000) * 4 / 500; //A
-        if (score >= 800000) return ((levelBase - 500) / 2 + (score - 800000) * ((levelBase - 500) / 2) / (100000)); //BBB
+    private int calculateRating(int lv, int score, VersionInfo version) {
+        if (score >= 1009000) return lv + 215; //SSS+
+        if (score >= 1007500) return lv + 200 + (score - 1007500) / 100; //SSS
+        if (score >= 1005000) return lv + 150 + (score - 1005000) / 50; //SS+
+        if (score >= 1000000) return lv + 100 + (score - 1000000) / 100; //SS
+        if (score >= 975000) return lv + (score - 975000) / 250; //S+, S
+        if (score >= 925000) return lv - 300 + (score - 925000) * 3 / 500; //AA
+        if (score >= 900000) return lv - 500 + (score - 900000) * 4 / 500; //A
+        if (score >= 800000) return ((lv - 500) / 2 + (score - 800000) * ((lv - 500) / 2) / (100000)); //BBB
         return 0; //C
     }
 }
