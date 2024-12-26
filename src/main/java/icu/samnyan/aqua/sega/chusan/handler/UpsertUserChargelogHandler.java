@@ -2,7 +2,6 @@ package icu.samnyan.aqua.sega.chusan.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import icu.samnyan.aqua.sega.general.BaseHandler;
-import icu.samnyan.aqua.sega.chusan.model.response.CodeResp;
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserCharge;
 import icu.samnyan.aqua.sega.chusan.model.userdata.Chu3UserData;
 import icu.samnyan.aqua.sega.chusan.service.UserChargeService;
@@ -53,8 +52,6 @@ public class UpsertUserChargelogHandler implements BaseHandler {
 
         userChargeService.save(userCharge);
 
-        String json = mapper.write(new CodeResp(1));
-        logger.info("Response: " + json);
-        return json;
+        return "{\"returnCode\":\"1\"}";
     }
 }

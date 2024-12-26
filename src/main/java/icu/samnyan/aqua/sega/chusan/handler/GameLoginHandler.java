@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import icu.samnyan.aqua.sega.general.BaseHandler;
 import icu.samnyan.aqua.sega.chusan.model.gamedata.GameLoginBonus;
 import icu.samnyan.aqua.sega.chusan.model.gamedata.GameLoginBonusPreset;
-import icu.samnyan.aqua.sega.chusan.model.response.CodeResp;
 import icu.samnyan.aqua.sega.chusan.model.userdata.Chu3UserData;
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserItem;
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserLoginBonus;
@@ -138,8 +137,6 @@ public class GameLoginHandler implements BaseHandler {
             }
         }
 
-        String json = mapper.write(new CodeResp(1));
-        logger.info("Response: " + json);
-        return json;
+        return "{\"returnCode\":\"1\"}";
     }
 }
