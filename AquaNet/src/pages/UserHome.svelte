@@ -273,7 +273,7 @@
                 {#if r.isAllPerfect || r.isAllJustice}
                   <img src="/assets/imgs/All Perfect.png" alt="All Perfect" />
                 {:else if r.isFullCombo}
-                  <img src="/assets/imgs/Full Combo.png" alt="Full Combo" />}
+                  <img src="/assets/imgs/Full Combo.png" alt="Full Combo" />
                 {/if}
                 <span class={`lv level-${r.level === 10 ? 3 : r.level}`}>
                   { r.notes?.[r.level === 10 ? 0 : r.level]?.lv?.toFixed(1) ?? '-' }

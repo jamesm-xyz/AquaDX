@@ -62,6 +62,9 @@ export interface GenericGamePlaylog {
   totalCombo: number
   afterRating: number
   beforeRating: number
+  isFullCombo?: boolean
+  isAllPerfect?: boolean
+  isAllJustice?: boolean
 }
 
 export interface GenericRanking {
