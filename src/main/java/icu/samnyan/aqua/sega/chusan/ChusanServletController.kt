@@ -6,8 +6,12 @@ import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
 import icu.samnyan.aqua.sega.chusan.model.request.UserCMissionResp
 import icu.samnyan.aqua.sega.general.BaseHandler
+import icu.samnyan.aqua.sega.general.RequestContext
+import icu.samnyan.aqua.sega.general.SpecialHandler
+import icu.samnyan.aqua.sega.general.toSpecial
 import icu.samnyan.aqua.sega.util.jackson.StringMapper
 import icu.samnyan.aqua.spring.Metrics
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.RestController
 import kotlin.collections.set
@@ -79,30 +83,32 @@ class ChusanServletController(
         .map { it.split("/").last() }.toSet()
 
     // Fun!
-    val initH = mutableMapOf<String, BaseHandler>()
-    operator fun String.invoke(fn: (Map<String, Any>) -> Any) = initH.set(this.lowercase(), BaseHandler(fn))
+    val initH = mutableMapOf<String, SpecialHandler>()
+    infix fun String.special(fn: SpecialHandler) = initH.set(this.lowercase(), fn)
+    operator fun String.invoke(fn: (Map<String, Any>) -> Any) = this special { fn(it.data) }
     infix fun String.user(fn: (Map<String, Any>, Long) -> Any) = this { fn(it, parsing { it["userId"]!!.long }) }
     infix fun String.static(fn: () -> Any) = mapper.write(fn()).let { resp -> this { resp } }
     val meow = init()
 
     val members = this::class.declaredMemberProperties
-    val handlers: Map<String, BaseHandler> = endpointList.associateWith { api ->
+    val handlers: Map<String, SpecialHandler> = endpointList.associateWith { api ->
         val name = api.replace("Api", "").replace("MatchingServer/", "").lowercase()
         initH[name]?.let { return@associateWith it }
         (members.find { it.name.lowercase() == name } ?: members.find { it.name.lowercase() == name.replace("cm", "") })
-            ?.let { it.call(this) as BaseHandler }
+            ?.let { (it.call(this) as BaseHandler).toSpecial() }
             ?: throw IllegalArgumentException("Chu3: No handler found for $api")
     }
 
     @API("/{endpoint}", "/MatchingServer/{endpoint}")
-    fun handle(@PV endpoint: Str, @RB request: MutableMap<Str, Any>, @PV version: Str): Any {
+    fun handle(@PV endpoint: Str, @RB data: MutableMap<Str, Any>, @PV version: Str, req: HttpServletRequest): Any {
+        val ctx = RequestContext(req, data)
         var api = endpoint
-        request["version"] = version
+        data["version"] = version
 
         // Export version
         if (api.endsWith("C3Exp")) {
             api = api.removeSuffix("C3Exp")
-            request["c3exp"] = true
+            data["c3exp"] = true
         }
         if (api in matchingEndpoints) api = "MatchingServer/$api"
 
@@ -117,11 +123,11 @@ class ChusanServletController(
             logger.info("Chu3 > $api no-op")
             return """{"returnCode":"1"}"""
         }
-        logger.info("Chu3 < $api : $request")
+        logger.info("Chu3 < $api : $data")
 
         return try {
             Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
-                handlers[api]!!.handle(request).let { if (it is String) it else mapper.write(it) }.also {
+                handlers[api]!!(ctx).let { if (it is String) it else mapper.write(it) }.also {
                     if (api !in setOf("GetUserItemApi", "GetGameEventApi"))
                         logger.info("Chu3 > $api : $it")
                 }
