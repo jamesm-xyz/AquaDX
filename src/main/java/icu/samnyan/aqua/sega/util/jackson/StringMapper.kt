@@ -50,9 +50,7 @@ class StringMapper {
                     LocalDateTime::class.java,
                     LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                 )
-            })
-            registerModule(SimpleModule().apply {
-                addSerializer(Boolean::class.java, BOOLEAN_SERIALIZER)
+                addSerializer(Boolean::class.javaObjectType, BOOLEAN_SERIALIZER)
                 addSerializer(Boolean::class.javaPrimitiveType, BOOLEAN_SERIALIZER)
             })
         }
