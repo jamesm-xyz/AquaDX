@@ -82,3 +82,4 @@ src/main/resources/meta/*/*.json
 *.log.*.gz
 *.salive
 test-diff
+htmlReport
