@@ -234,11 +234,7 @@ fun ChusanServletController.init() {
             else -> null
         }?.let { db.userGeneralData.findByUser_Card_ExtIdAndPropertyKey(uid, it)() }?.propertyValue
 
-        val lst = fav?.let {
-            if (it.isNotBlank() && it.contains(",")) it.split(",").map { it.int }
-            else null
-        } ?: emptyList()
-
+        val lst = fav?.ifBlank { null }?.split(",")?.map { it.int } ?: emptyList()
         mapOf("userId" to uid, "kind" to kind, "length" to lst.size, "nextIndex" to -1, "userFavoriteItemList" to lst)
     }
 
