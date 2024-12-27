@@ -3,20 +3,12 @@ package icu.samnyan.aqua.api.controller.sega.game.chuni.v2;
 import com.fasterxml.jackson.core.type.TypeReference;
 import icu.samnyan.aqua.api.model.MessageResponse;
 import icu.samnyan.aqua.api.model.ReducedPageResponse;
-import icu.samnyan.aqua.api.model.resp.sega.chuni.v2.RatingItem;
 import icu.samnyan.aqua.api.model.resp.sega.chuni.v2.RecentResp;
 import icu.samnyan.aqua.api.model.resp.sega.chuni.v2.external.Chu3DataExport;
-import icu.samnyan.aqua.api.model.resp.sega.chuni.v2.external.ChuniDataImport;
-import icu.samnyan.aqua.api.model.resp.sega.chuni.v2.external.ExternalUserData;
 import icu.samnyan.aqua.api.util.ApiMapper;
-import icu.samnyan.aqua.sega.chusan.model.gamedata.Level;
-import icu.samnyan.aqua.sega.chusan.model.gamedata.Music;
 import icu.samnyan.aqua.sega.chusan.model.userdata.*;
 import icu.samnyan.aqua.sega.chusan.service.*;
-import icu.samnyan.aqua.sega.general.model.Card;
 import icu.samnyan.aqua.sega.general.service.CardService;
-import icu.samnyan.aqua.sega.util.VersionInfo;
-import icu.samnyan.aqua.sega.util.VersionUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * For all aimeId parameter, should use String
@@ -61,7 +52,6 @@ public class ApiChuniV2PlayerDataController {
     private final UserMusicDetailService userMusicDetailService;
     private final UserPlaylogService userPlaylogService;
     private final UserGeneralDataService userGeneralDataService;
-    private final GameMusicService gameMusicService;
 
     @PutMapping("profile/username")
     public Chu3UserData updateName(@RequestBody Map<String, Object> request) {
@@ -169,90 +159,6 @@ public class ApiChuniV2PlayerDataController {
         Page<UserPlaylog> playLogs = userPlaylogService.getRecentPlays(aimeId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "userPlayDate")));
         return new ReducedPageResponse<>(mapper.convert(playLogs.getContent(), new TypeReference<>() {
         }), playLogs.getPageable().getPageNumber(), playLogs.getTotalPages(), playLogs.getTotalElements());
-    }
-
-    @GetMapping("rating")
-    public List<RatingItem> getRating(@RequestParam String aimeId) {
-
-        Map<Integer, Music> musicMap = gameMusicService.getIdMap();
-        List<UserMusicDetail> details = userMusicDetailService.getByUserId(aimeId);
-
-        var user = userDataService.getUserByExtId(aimeId).orElseThrow();
-        var version = VersionUtil.parseVersion(user.getLastRomVersion());
-
-        List<RatingItem> result = new ArrayList<>();
-        for (UserMusicDetail detail : details) {
-            Music music = musicMap.get(detail.getMusicId());
-            if (music != null) {
-                Level level = music.getLevels().get(detail.getLevel());
-                if (level != null) {
-                    int levelBase = level.getLevel() * 100 + level.getLevelDecimal();
-                    int score = detail.getScoreMax();
-                    int rating = calculateRating(levelBase, score, version);
-                    result.add(new RatingItem(music.getMusicId(), music.getName(), music.getArtistName(), level.getDiff(), score, levelBase, rating));
-                }
-            }
-        }
-
-        return result.stream()
-                .filter(detail -> detail.getLevel() != 5)
-                .sorted(Comparator.comparingInt(RatingItem::getRating).reversed())
-                .limit(30)
-                .collect(Collectors.toList());
-    }
-
-    @GetMapping("rating/recent")
-    public List<RatingItem> getRecentRating(@RequestParam String aimeId) {
-        Map<Integer, Music> musicMap = gameMusicService.getIdMap();
-        Optional<UserGeneralData> recentOptional = userGeneralDataService.getByUserIdAndKey(aimeId, "recent_rating_list");
-
-
-        var user = userDataService.getUserByExtId(aimeId).orElseThrow();
-        var version = VersionUtil.parseVersion(user.getLastRomVersion());
-
-        List<RatingItem> result = new LinkedList<>();
-        if (recentOptional.isPresent()) {
-            // Read from recent_rating_list
-            String val = recentOptional.get().getPropertyValue();
-            if (StringUtils.isNotBlank(val) && val.contains(",")) {
-                String[] records = val.split(",");
-                for (String record :
-                        records) {
-                    String[] value = record.split(":");
-                    Music music = musicMap.get(Integer.parseInt(value[0]));
-                    if (music != null) {
-                        Level level = music.getLevels().get(Integer.parseInt(value[1]));
-                        if (level != null) {
-                            int levelBase = getLevelBase(level.getLevel(), level.getLevelDecimal());
-                            int score = Integer.parseInt(value[2]);
-                            int rating = calculateRating(levelBase, score, version);
-                            result.add(new RatingItem(music.getMusicId(), music.getName(), music.getArtistName(), level.getDiff(), score, levelBase, rating));
-                        }
-                    }
-                }
-            }
-        } else {
-            // Use old method
-            List<UserPlaylog> logList = userPlaylogService.getRecent30Plays(aimeId);
-            for (UserPlaylog log : logList) {
-                Music music = musicMap.get(log.getMusicId());
-                if (music != null) {
-                    Level level = music.getLevels().get(log.getLevel());
-                    if (level != null) {
-                        int levelBase = getLevelBase(level.getLevel(), level.getLevelDecimal());
-                        int score = log.getScore();
-                        int rating = calculateRating(levelBase, score, version);
-                        result.add(new RatingItem(music.getMusicId(), music.getName(), music.getArtistName(), level.getDiff(), score, levelBase, rating));
-                    }
-                }
-            }
-        }
-
-        return result.stream()
-                .filter(detail -> detail.getLevel() != 5)
-                .sorted(Comparator.comparingInt(RatingItem::getRating).reversed())
-                .limit(10)
-                .collect(Collectors.toList());
     }
 
     @GetMapping("song/{id}")
@@ -406,21 +312,5 @@ public class ApiChuniV2PlayerDataController {
         HttpHeaders headers = new HttpHeaders();
         headers.set("content-disposition", "attachment; filename=chusan_" + aimeId + "_exported.json");
         return new ResponseEntity<>(data, headers, HttpStatus.OK);
-    }
-
-    private int getLevelBase(int level, int levelDecimal) {
-        return level * 100 + levelDecimal;
-    }
-
-    private int calculateRating(int lv, int score, VersionInfo version) {
-        if (score >= 1009000) return lv + 215; //SSS+
-        if (score >= 1007500) return lv + 200 + (score - 1007500) / 100; //SSS
-        if (score >= 1005000) return lv + 150 + (score - 1005000) / 50; //SS+
-        if (score >= 1000000) return lv + 100 + (score - 1000000) / 100; //SS
-        if (score >= 975000) return lv + (score - 975000) / 250; //S+, S
-        if (score >= 925000) return lv - 300 + (score - 925000) * 3 / 500; //AA
-        if (score >= 900000) return lv - 500 + (score - 900000) * 4 / 500; //A
-        if (score >= 800000) return ((lv - 500) / 2 + (score - 800000) * ((lv - 500) / 2) / (100000)); //BBB
-        return 0; //C
     }
 }

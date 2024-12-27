@@ -22,18 +22,6 @@ public class UserActivityService {
         this.userActivityRepository = userActivityRepository;
     }
 
-    public UserActivity save(UserActivity userActivity) {
-        return userActivityRepository.save(userActivity);
-    }
-
-    public List<UserActivity> saveAll(List<UserActivity> userActivityList) {
-        return userActivityRepository.saveAll(userActivityList);
-    }
-
-    public Optional<UserActivity> getByUserAndActivityIdAndKind(Chu3UserData user, int activityId, int kind) {
-        return userActivityRepository.findTopByUserAndActivityIdAndKindOrderByIdDesc(user, activityId, kind);
-    }
-
     public List<UserActivity> getByUserId(String userId) {
         return userActivityRepository.findByUser_Card_ExtId(Long.parseLong(userId));
     }

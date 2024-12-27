@@ -1,6 +1,7 @@
 package icu.samnyan.aqua.sega.chusan.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import icu.samnyan.aqua.sega.chusan.ChusanProps;
 import icu.samnyan.aqua.sega.general.BaseHandler;
 import icu.samnyan.aqua.sega.chusan.model.gamedata.GameLoginBonus;
 import icu.samnyan.aqua.sega.chusan.model.gamedata.GameLoginBonusPreset;
@@ -8,10 +9,9 @@ import icu.samnyan.aqua.sega.chusan.model.userdata.Chu3UserData;
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserItem;
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserLoginBonus;
 import icu.samnyan.aqua.sega.chusan.service.*;
-import icu.samnyan.aqua.sega.util.jackson.StringMapper;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -23,38 +23,16 @@ import java.util.Optional;
 /**
  * @author samnyan (privateamusement@protonmail.com)
  */
+@AllArgsConstructor
 @Component("ChusanGameLoginHandler")
 public class GameLoginHandler implements BaseHandler {
-
     private static final Logger logger = LoggerFactory.getLogger(GameLoginHandler.class);
-
-    private boolean enableLoginBonus = false;
-
+    private final ChusanProps props;
     private final UserDataService userDataService;
-
     private final UserItemService userItemService;
-
     private final GameLoginBonusPresetService gameLoginBonusPresetService;
-
     private final GameLoginBonusService gameLoginBonusService;
-
     private final UserLoginBonusService userLoginBonusService;
-
-    public GameLoginHandler(StringMapper mapper,
-                            @Value("${game.chusan.loginbonus-enable:}") boolean enableLoginBonus,
-                            UserDataService userDataService,
-                            UserItemService userItemService,
-                            GameLoginBonusPresetService gameLoginBonusPresetService,
-                            GameLoginBonusService gameLoginBonusService,
-                            UserLoginBonusService userLoginBonusService
-                            ) {
-        this.enableLoginBonus = enableLoginBonus;
-        this.userDataService = userDataService;
-        this.userItemService = userItemService;
-        this.gameLoginBonusPresetService = gameLoginBonusPresetService;
-        this.gameLoginBonusService = gameLoginBonusService;
-        this.userLoginBonusService = userLoginBonusService;
-    }
 
     @Override
     public String handle(Map<String, ?> request) throws JsonProcessingException {
@@ -63,7 +41,7 @@ public class GameLoginHandler implements BaseHandler {
         boolean userPresent = userDataOptional.isPresent();
         if (userPresent){
             userDataService.updateLoginTime(userDataOptional.get());
-            if(this.enableLoginBonus){
+            if(props.getLoginBonusEnable()){
                 List<GameLoginBonusPreset> gameLoginBonusList = this.gameLoginBonusPresetService.getGameLoginBonusPresets(1);
 
                 for (GameLoginBonusPreset preset: gameLoginBonusList) {
