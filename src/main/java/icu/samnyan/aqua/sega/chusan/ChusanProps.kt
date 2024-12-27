@@ -7,4 +7,5 @@ import org.springframework.context.annotation.Configuration
 @ConfigurationProperties(prefix = "game.chusan")
 class ChusanProps {
     var teamName: String? = null
+    var loginBonusEnable = false
 }

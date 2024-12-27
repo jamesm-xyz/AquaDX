@@ -32,13 +32,10 @@ import kotlin.reflect.full.declaredMemberProperties
 @API(value = ["/g/chu3/{version}/ChuniServlet", "/g/chu3/{version}"])
 class ChusanServletController(
     val gameLogin: GameLoginHandler,
-    val getUserLoginBonus: GetUserLoginBonusHandler,
     val getUserMusic: GetUserMusicHandler,
     val getUserRecentRating: GetUserRecentRatingHandler,
     val upsertUserAll: UpsertUserAllHandler,
-    val cmGetUserPreview: CMGetUserPreviewHandler,
     val cmGetUserCharacter: CMGetUserCharacterHandler,
-    val cmGetUserItem: CMGetUserItemHandler,
     val cmUpsertUserGacha: CMUpsertUserGachaHandler,
     val cmUpsertUserPrintSubtract: CMUpsertUserPrintSubtractHandler,
     val cmUpsertUserPrintCancel: CMUpsertUserPrintCancelHandler,
@@ -53,7 +50,7 @@ class ChusanServletController(
 
     // Below are code related to handling the handlers
     val externalHandlers = mutableListOf(
-        "GameLoginApi", "GetUserLoginBonusApi", "GetUserMusicApi", "GetUserRecentRatingApi", "UpsertUserAllApi",
+        "GameLoginApi", "GetUserMusicApi", "GetUserRecentRatingApi", "UpsertUserAllApi",
         "CMGetUserCharacterApi", "CMUpsertUserGachaApi",
         "CMUpsertUserPrintCancelApi", "CMUpsertUserPrintSubtractApi")
 
@@ -263,6 +260,13 @@ fun ChusanServletController.init() {
             "headphone" to option?.headphone,
             "chargeState" to 1, "userNameEx" to "", "banState" to 0,
         ) + userDict
+    }
+
+    "GetUserLoginBonus" api@ {
+        if (!props.loginBonusEnable) return@api mapOf("userId" to uid, "length" to 0, "userLoginBonusList" to empty)
+
+        val lst = db.userLoginBonus.findAllLoginBonus(uid.int, 1, 0)
+        mapOf("userId" to uid, "length" to lst.size, "userLoginBonusList" to lst)
     }
 
     "GetUserMapArea" {
