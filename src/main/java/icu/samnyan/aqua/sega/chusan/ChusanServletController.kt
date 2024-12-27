@@ -49,42 +49,27 @@ class ChusanServletController(
     val versionHelper: ChusanVersionHelper,
     val props: ChusanProps
 ) {
-    val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
+    val log = LoggerFactory.getLogger(ChusanServletController::class.java)
 
     // Below are code related to handling the handlers
-    val endpointList = mutableListOf(
-        "GameLoginApi", "GetGameChargeApi", "GetGameEventApi", "GetGameIdlistApi",
-        "GetGameRankingApi", "GetGameSettingApi", "GetTeamCourseRuleApi", "GetTeamCourseSettingApi", "GetUserActivityApi",
-        "GetUserCharacterApi", "GetUserChargeApi", "GetUserCourseApi", "GetUserDataApi", "GetUserDuelApi",
-        "GetUserFavoriteItemApi", "GetUserItemApi", "GetUserLoginBonusApi", "GetUserMapAreaApi", "GetUserMusicApi",
-        "GetUserOptionApi", "GetUserPreviewApi", "GetUserRecentRatingApi", "GetUserRegionApi", "GetUserRivalDataApi",
-        "GetUserRivalMusicApi", "GetUserTeamApi", "GetUserSymbolChatSettingApi", "GetUserNetBattleDataApi",
-        "UpsertUserAllApi", "UpsertUserChargelogApi", "GetGameGachaApi",
-        "MatchingServer/BeginMatchingApi", "MatchingServer/EndMatchingApi", "MatchingServer/GetMatchingStateApi",
-        "GetGameGachaCardByIdApi", "GetUserCardPrintErrorApi", "CMGetUserCharacterApi", "CMGetUserDataApi",
-        "GetUserGachaApi", "CMGetUserItemApi", "CMGetUserPreviewApi", "GetUserPrintedCardApi",
-        "RollGachaApi", "CMUpsertUserGachaApi", "CMUpsertUserPrintApi", "CMUpsertUserPrintCancelApi",
-        "CMUpsertUserPrintlogApi", "CMUpsertUserPrintSubtractApi",
-        "GetUserCtoCPlayApi", "GetUserCMissionApi", "GetUserNetBattleRankingInfoApi", "GetGameMapAreaConditionApi")
+    val externalHandlers = mutableListOf(
+        "GameLoginApi", "GetUserLoginBonusApi", "GetUserMusicApi", "GetUserRecentRatingApi", "UpsertUserAllApi",
+        "CMGetUserCharacterApi", "CMGetUserItemApi", "CMGetUserPreviewApi", "CMUpsertUserGachaApi",
+        "CMUpsertUserPrintCancelApi", "CMUpsertUserPrintSubtractApi")
 
     val noopEndpoint = setOf("UpsertClientBookkeepingApi", "UpsertClientDevelopApi", "UpsertClientErrorApi",
         "UpsertClientSettingApi", "UpsertClientTestmodeApi", "CreateTokenApi", "RemoveTokenApi", "UpsertClientUploadApi",
-        "MatchingServer/Ping", "PrinterLoginApi", "PrinterLogoutApi", "Ping", "GameLogoutApi",
-        "MatchingServer/RemoveMatchingMemberApi")
-
-    val matchingEndpoints = (endpointList + noopEndpoint).filter { it.startsWith("MatchingServer") }
-        .map { it.split("/").last() }.toSet()
+        "PrinterLoginApi", "PrinterLogoutApi", "Ping", "GameLogoutApi", "RemoveMatchingMemberApi")
 
     // Fun!
     val initH = mutableMapOf<String, SpecialHandler>()
-    infix operator fun String.invoke(fn: SpecialHandler) = initH.set(this.lowercase(), fn)
+    infix operator fun String.invoke(fn: SpecialHandler) = initH.set("${this}Api", fn)
     infix fun String.static(fn: () -> Any) = mapper.write(fn()).let { resp -> this { resp } }
     val meow = init()
 
     val members = this::class.declaredMemberProperties
-    val handlers: Map<String, SpecialHandler> = endpointList.associateWith { api ->
-        val name = api.replace("Api", "").replace("MatchingServer/", "").lowercase()
-        initH[name]?.let { return@associateWith it }
+    val handlers: Map<String, SpecialHandler> = initH + externalHandlers.associateWith { api ->
+        val name = api.replace("Api", "").lowercase()
         (members.find { it.name.lowercase() == name } ?: members.find { it.name.lowercase() == name.replace("cm", "") })
             ?.let { (it.call(this) as BaseHandler).toSpecial() }
             ?: throw IllegalArgumentException("Chu3: No handler found for $api")
@@ -101,26 +86,25 @@ class ChusanServletController(
             api = api.removeSuffix("C3Exp")
             data["c3exp"] = true
         }
-        if (api in matchingEndpoints) api = "MatchingServer/$api"
 
         if (api !in noopEndpoint && !handlers.containsKey(api)) {
-            logger.warn("Chu3 > $api not found")
+            log.warn("Chu3 > $api not found")
             return """{"returnCode":"1","apiName":"$api"}"""
         }
 
         // Only record the counter metrics if the API is known.
         Metrics.counter("aquadx_chusan_api_call", "api" to api).increment()
         if (api in noopEndpoint) {
-            logger.info("Chu3 > $api no-op")
+            log.info("Chu3 > $api no-op")
             return """{"returnCode":"1"}"""
         }
-        logger.info("Chu3 < $api : ${data.toJson()}")
+        log.info("Chu3 < $api : ${data.toJson()}")
 
         return try {
             Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
                 handlers[api]!!(ctx).let { if (it is String) it else mapper.write(it) }.also {
                     if (api !in setOf("GetUserItemApi", "GetGameEventApi"))
-                        logger.info("Chu3 > $api : $it")
+                        log.info("Chu3 > $api : $it")
                 }
             }
         } catch (e: Exception) {
