@@ -1,123 +1,17 @@
 package icu.samnyan.aqua.sega.chusan
 
 import ext.*
-import icu.samnyan.aqua.net.db.AquaUserServices
-import icu.samnyan.aqua.net.utils.simpleDescribe
-import icu.samnyan.aqua.sega.chusan.handler.*
-import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
 import icu.samnyan.aqua.sega.chusan.model.request.UserCMissionResp
 import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingMemberInfo
 import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingWaitState
 import icu.samnyan.aqua.sega.chusan.model.response.data.UserEmoney
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserCharge
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserMusicDetail
-import icu.samnyan.aqua.sega.general.BaseHandler
-import icu.samnyan.aqua.sega.general.RequestContext
-import icu.samnyan.aqua.sega.general.SpecialHandler
 import icu.samnyan.aqua.sega.general.model.response.UserRecentRating
-import icu.samnyan.aqua.sega.general.toSpecial
-import icu.samnyan.aqua.sega.util.jackson.BasicMapper
-import icu.samnyan.aqua.sega.util.jackson.StringMapper
-import icu.samnyan.aqua.spring.Metrics
-import jakarta.servlet.http.HttpServletRequest
-import org.slf4j.LoggerFactory
-import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.collections.set
-import kotlin.reflect.full.declaredMemberProperties
 
-/**
- * @author samnyan (privateamusement@protonmail.com)
- */
-@Suppress("unused")
-@RestController
-@API(value = ["/g/chu3/{version}/ChuniServlet", "/g/chu3/{version}"])
-class ChusanServletController(
-    val gameLogin: GameLoginHandler,
-    val upsertUserAll: UpsertUserAllHandler,
-    val cmUpsertUserGacha: CMUpsertUserGachaHandler,
-    val cmUpsertUserPrintSubtract: CMUpsertUserPrintSubtractHandler,
-    val cmUpsertUserPrintCancel: CMUpsertUserPrintCancelHandler,
-
-    val mapper: StringMapper,
-    val cmMapper: BasicMapper,
-    val db: Chu3Repos,
-    val us: AquaUserServices,
-    val versionHelper: ChusanVersionHelper,
-    val props: ChusanProps
-) {
-    val log = LoggerFactory.getLogger(ChusanServletController::class.java)
-
-    // Below are code related to handling the handlers
-    val externalHandlers = mutableListOf("GameLoginApi", "UpsertUserAllApi",
-        "CMUpsertUserGachaApi", "CMUpsertUserPrintCancelApi", "CMUpsertUserPrintSubtractApi")
-
-    val noopEndpoint = setOf("UpsertClientBookkeepingApi", "UpsertClientDevelopApi", "UpsertClientErrorApi",
-        "UpsertClientSettingApi", "UpsertClientTestmodeApi", "CreateTokenApi", "RemoveTokenApi", "UpsertClientUploadApi",
-        "PrinterLoginApi", "PrinterLogoutApi", "Ping", "GameLogoutApi", "RemoveMatchingMemberApi")
-
-    // Fun!
-    val initH = mutableMapOf<String, SpecialHandler>()
-    infix operator fun String.invoke(fn: SpecialHandler) = initH.set("${this}Api", fn)
-    infix fun List<String>.all(fn: SpecialHandler) = forEach { it(fn) }
-    infix fun String.static(fn: () -> Any) = mapper.write(fn()).let { resp -> this { resp } }
-    val meow = init()
-
-    val members = this::class.declaredMemberProperties
-    val handlers: Map<String, SpecialHandler> = initH + externalHandlers.associateWith { api ->
-        val name = api.replace("Api", "").lowercase()
-        (members.find { it.name.lowercase() == name } ?: members.find { it.name.lowercase() == name.replace("cm", "") })
-            ?.let { (it.call(this) as BaseHandler).toSpecial() }
-            ?: throw IllegalArgumentException("Chu3: No handler found for $api")
-    }
-
-    @API("/{endpoint}", "/MatchingServer/{endpoint}")
-    fun handle(@PV endpoint: Str, @RB data: MutableMap<Str, Any>, @PV version: Str, req: HttpServletRequest): Any {
-        val ctx = RequestContext(req, data)
-        var api = endpoint
-        data["version"] = version
-
-        // Export version
-        if (api.endsWith("C3Exp")) {
-            api = api.removeSuffix("C3Exp")
-            data["c3exp"] = true
-        }
-
-        if (api !in noopEndpoint && !handlers.containsKey(api)) {
-            log.warn("Chu3 > $api not found")
-            return """{"returnCode":"1","apiName":"$api"}"""
-        }
-
-        // Only record the counter metrics if the API is known.
-        Metrics.counter("aquadx_chusan_api_call", "api" to api).increment()
-        if (api in noopEndpoint) {
-            log.info("Chu3 > $api no-op")
-            return """{"returnCode":"1"}"""
-        }
-        log.info("Chu3 < $api : ${data.toJson()}")
-        val map = if ("CM" in api) cmMapper else mapper
-
-        return try {
-            Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
-                handlers[api]!!(ctx).let { if (it is String) it else map.write(it) }.also {
-                    if (api !in setOf("GetUserItemApi", "GetGameEventApi"))
-                        log.info("Chu3 > $api : $it")
-                }
-            }
-        } catch (e: Exception) {
-            Metrics.counter(
-                "aquadx_chusan_api_error",
-                "api" to api, "error" to e.simpleDescribe()
-            ).increment()
-            throw e
-        }
-    }
-}
-
-
-@Suppress("UNCHECKED_CAST")
-fun ChusanServletController.init() {
+val chusanInit: ChusanController.() -> Unit = {
     // Stub handlers
     "GetGameRanking" { """{"type":"${data["type"]}","length":"0","gameRankingList":[]}""" }
     "GetGameIdlist" { """{"type":"${data["type"]}","length":"0","gameIdlistList":[]}""" }
@@ -183,7 +77,8 @@ fun ChusanServletController.init() {
 
     "GetGameGachaCardById" { db.gameGachaCard.findAllByGachaId(parsing { data["gachaId"]!!.int }).let {
         mapOf("gachaId" to it.size, "length" to it.size, "isPickup" to false, "gameGachaCardList" to it,
-            "emissionList" to empty, "afterCalcList" to empty)
+            "emissionList" to empty, "afterCalcList" to empty
+        )
     } }
 
     "GetUserCMission" {
@@ -333,8 +228,8 @@ fun ChusanServletController.init() {
                 "maxCountCharacter" to 300,
                 "maxCountItem" to 300,
                 "maxCountMusic" to 300,
-                "matchStartTime" to LocalDateTime.now().minusHours(1).format(fmt),
-                "matchEndTime" to LocalDateTime.now().plusHours(1).format(fmt),
+                "matchStartTime" to LocalDateTime.now().minusHours(5).format(fmt),
+                "matchEndTime" to LocalDateTime.now().plusHours(5).format(fmt),
                 "matchTimeLimit" to 10,
                 "matchErrorLimit" to 10,
                 "matchingUri" to addr,
