@@ -18,6 +18,7 @@ import icu.samnyan.aqua.spring.Metrics
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.RestController
+import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.collections.set
@@ -34,7 +35,6 @@ class ChusanServletController(
     val getUserLoginBonus: GetUserLoginBonusHandler,
     val getUserMusic: GetUserMusicHandler,
     val getUserRecentRating: GetUserRecentRatingHandler,
-    val getUserTeam: GetUserTeamHandler,
     val upsertUserAll: UpsertUserAllHandler,
     val cmGetUserPreview: CMGetUserPreviewHandler,
     val cmGetUserData: CMGetUserDataHandler,
@@ -48,6 +48,7 @@ class ChusanServletController(
     val db: Chu3Repos,
     val us: AquaUserServices,
     val versionHelper: ChusanVersionHelper,
+    val props: ChusanProps
 ) {
     val logger = LoggerFactory.getLogger(ChusanServletController::class.java)
 
@@ -285,6 +286,18 @@ fun ChusanServletController.init() {
             .mapNotNull { it["mapAreaId"]?.toIntOrNull() }
 
         mapOf("userId" to uid, "userMapAreaList" to db.userMap.findAllByUserCardExtIdAndMapAreaIdIn(uid, maps))
+    }
+
+    "GetUserTeam" {
+        val playDate = parsing { data["playDate"] as String }
+        val team = db.userData.findByCard_ExtId(uid)()?.card?.aquaUser?.gameOptions?.chusanTeamName
+            ?: props.teamName ?:  "一緒に歌おう！"
+        val teamStr = String(team.toByteArray(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8)
+
+        mapOf(
+            "userId" to uid, "teamId" to 1, "teamRank" to 1, "teamName" to teamStr,
+            "userTeamPoint" to mapOf("userId" to uid, "teamId" to 1, "orderId" to 1, "teamPoint" to 1, "aggrDate" to playDate)
+        )
     }
 
     // Game settings

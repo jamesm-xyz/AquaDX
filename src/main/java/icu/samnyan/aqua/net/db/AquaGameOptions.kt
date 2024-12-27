@@ -33,7 +33,7 @@ class AquaGameOptions(
     var waccaAlwaysVip: Boolean = false,
 
     @SettingField("general")
-    var chuniTeamName: String = "",
+    var chusanTeamName: String = "",
 )
 
 interface AquaGameOptionsRepo : JpaRepository<AquaGameOptions, Long>
