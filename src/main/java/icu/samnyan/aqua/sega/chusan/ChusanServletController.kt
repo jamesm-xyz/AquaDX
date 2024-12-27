@@ -8,6 +8,7 @@ import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
 import icu.samnyan.aqua.sega.chusan.model.request.UserCMissionResp
 import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingMemberInfo
 import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingWaitState
+import icu.samnyan.aqua.sega.chusan.model.response.data.UserEmoney
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserCharge
 import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.general.RequestContext
@@ -37,7 +38,6 @@ class ChusanServletController(
     val getUserRecentRating: GetUserRecentRatingHandler,
     val upsertUserAll: UpsertUserAllHandler,
     val cmGetUserPreview: CMGetUserPreviewHandler,
-    val cmGetUserData: CMGetUserDataHandler,
     val cmGetUserCharacter: CMGetUserCharacterHandler,
     val cmGetUserItem: CMGetUserItemHandler,
     val cmUpsertUserGacha: CMUpsertUserGachaHandler,
@@ -387,5 +387,12 @@ fun ChusanServletController.init() {
                 ))
             )
         )
+    }
+
+    // CardMaker (TODO: Somebody test this, I don't have a card maker)
+    "CMGetUserData" {
+        val user = db.userData.findByCard_ExtId(uid)() ?: (400 - "User not found")
+        user.userEmoney = UserEmoney()
+        mapOf("userId" to uid, "userData" to user, "userEmoney" to user.userEmoney)
     }
 }
