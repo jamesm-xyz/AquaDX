@@ -19,7 +19,6 @@ import icu.samnyan.aqua.spring.Metrics
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.RestController
-import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.collections.set
@@ -292,10 +291,9 @@ fun ChusanServletController.init() {
         val playDate = parsing { data["playDate"] as String }
         val team = db.userData.findByCard_ExtId(uid)()?.card?.aquaUser?.gameOptions?.chusanTeamName?.ifBlank { null }
             ?: props.teamName?.ifBlank { null } ?:  "一緒に歌おう！"
-        val teamStr = String(team.toByteArray(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8)
 
         mapOf(
-            "userId" to uid, "teamId" to 1, "teamRank" to 1, "teamName" to teamStr,
+            "userId" to uid, "teamId" to 1, "teamRank" to 1, "teamName" to team,
             "userTeamPoint" to mapOf("userId" to uid, "teamId" to 1, "orderId" to 1, "teamPoint" to 1, "aggrDate" to playDate)
         )
     }
