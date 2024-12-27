@@ -18,7 +18,7 @@
   if (split) console.log("Split", split)
 </script>
 
-{#if split}
+{#if split && comp}
 <div>
   <h2>{title}</h2>
   <div class="rating-composition">
