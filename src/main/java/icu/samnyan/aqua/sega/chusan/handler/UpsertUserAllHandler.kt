@@ -66,6 +66,12 @@ class UpsertUserAllHandler(
                 rp.userGeneralData.save(d.apply { propertyValue = list!!.str() })
             }
 
+            userFavoriteMusicList?.let { list ->
+                val d = rp.userGeneralData.findByUserAndPropertyKey(u, "favorite_music")()
+                    ?: UserGeneralData().apply { user = u; propertyKey = "favorite_music" }
+                rp.userGeneralData.save(d.apply { propertyValue = list.joinToString(",") })
+            }
+
             // Playlog
             userPlaylogList?.let { rp.userPlaylog.saveAll(it) }
 

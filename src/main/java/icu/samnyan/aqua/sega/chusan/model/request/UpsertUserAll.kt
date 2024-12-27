@@ -11,6 +11,11 @@ class UserCMissionResp {
     var userCMissionProgressList: List<UserCMissionProgress>? = null
 }
 
+class FavNewMusic(
+    var musicId: Int = 0,
+    var orderId: Int = 0,
+)
+
 class UpsertUserAll(
     var userData: List<Chu3UserData>? = null,
     var userGameOption: List<UserGameOption>? = null,
@@ -34,4 +39,5 @@ class UpsertUserAll(
     var userEmoneyList: List<JDict>? = null,
     var userNetBattleData: List<JDict>? = null,
     var userCMissionList: List<UserCMissionResp>? = null,
+    var userFavoriteMusicList: List<FavNewMusic>? = null,
 )
