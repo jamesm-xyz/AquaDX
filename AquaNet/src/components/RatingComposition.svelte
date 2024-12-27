@@ -9,9 +9,12 @@
   export let comp: string | undefined;
   export let allMusics: Record<string, MusicMeta>;
   export let game: GameName;
+  export let top: number | undefined = undefined;
 
-  const split = comp?.split(",")?.filter(it => it.split(":")[0] !== '0')
-    ?.map(it => parseComposition(it, allMusics[it.split(":")[0]], game))
+  let split = comp?.split(",")?.filter(it => it.split(":")[0] !== '0')
+    ?.map(it => parseComposition(it, allMusics, game))
+
+  if (top) split = split?.toSorted((a, b) => b.score - a.score).slice(0, top)
   if (split) console.log("Split", split)
 </script>
 

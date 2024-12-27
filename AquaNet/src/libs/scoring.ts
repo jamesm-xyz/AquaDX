@@ -116,12 +116,13 @@ export interface ParsedComposition {
 }
 
 
-export function parseComposition(item: string, meta: MusicMeta, game: GameName): ParsedComposition {
+export function parseComposition(item: string, allMusics: Record<string, MusicMeta>, game: GameName): ParsedComposition {
   // Chuni & ongeki: musicId, difficultId, score
   // Mai: musicId, level (difficultyId), romVersion, achievement (score)
   const mapData = item.split(':').map(Number)
   if (game === 'mai2') mapData.splice(2, 1)
   const [ musicId, diffId, score ] = mapData
+  const meta = allMusics[musicId]
 
   // Get score multiplier
   const tup = getMult(score, game)
