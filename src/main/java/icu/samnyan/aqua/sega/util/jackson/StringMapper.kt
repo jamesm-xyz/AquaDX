@@ -16,13 +16,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-//class BooleanStringSerializer(t: Class<Boolean>? = null) : StdSerializer<Boolean>(t) {
-//    override fun serialize(value: Boolean, gen: JsonGenerator, provider: SerializerProvider) {
-//        gen.writeString(value.toString())
-//    }
-//}
-
-
 @Component
 class StringMapper {
     fun write(o: Any?) = STRING_MAPPER.writeValueAsString(o)
