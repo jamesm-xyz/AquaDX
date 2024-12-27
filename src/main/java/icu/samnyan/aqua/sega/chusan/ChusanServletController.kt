@@ -218,7 +218,9 @@ fun ChusanServletController.init() {
 
     ls("GetUserItem", "CMGetUserItem") all {
         val kind = parsing { (data["nextIndex"]!!.long / 10000000000L).int }
-        val lst = db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind)
+        val maxCount = parsing { data["maxCount"]!!.int }
+        // TODO pagination
+        val lst = db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind).take(maxCount)
 
         // TODO: All unlock
         mapOf("userId" to uid, "length" to lst.size, "nextIndex" to -1, "itemKind" to kind, "userItemList" to lst)
