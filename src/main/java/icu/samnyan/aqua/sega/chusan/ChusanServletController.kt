@@ -13,6 +13,7 @@ import icu.samnyan.aqua.sega.chusan.model.userdata.UserCharge
 import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.general.RequestContext
 import icu.samnyan.aqua.sega.general.SpecialHandler
+import icu.samnyan.aqua.sega.general.model.response.UserRecentRating
 import icu.samnyan.aqua.sega.general.toSpecial
 import icu.samnyan.aqua.sega.util.jackson.StringMapper
 import icu.samnyan.aqua.spring.Metrics
@@ -50,7 +51,7 @@ class ChusanServletController(
 
     // Below are code related to handling the handlers
     val externalHandlers = mutableListOf(
-        "GameLoginApi", "GetUserMusicApi", "GetUserRecentRatingApi", "UpsertUserAllApi",
+        "GameLoginApi", "GetUserMusicApi", "UpsertUserAllApi",
         "CMGetUserCharacterApi", "CMUpsertUserGachaApi",
         "CMUpsertUserPrintCancelApi", "CMUpsertUserPrintSubtractApi")
 
@@ -267,6 +268,16 @@ fun ChusanServletController.init() {
 
         val lst = db.userLoginBonus.findAllLoginBonus(uid.int, 1, 0)
         mapOf("userId" to uid, "length" to lst.size, "userLoginBonusList" to lst)
+    }
+
+    "GetUserRecentRating" {
+        val lst = db.userGeneralData.findByUser_Card_ExtIdAndPropertyKey(uid, "recent_rating_list")()
+            ?.propertyValue?.ifBlank { null }
+            ?.split(',')?.dropLastWhile { it.isEmpty() }?.map { it.split(':') }
+            ?.map { (musicId, level, ver, score) -> UserRecentRating(musicId.int, level.int, ver, score.int) }
+            ?: listOf()
+
+        mapOf("userId" to uid, "length" to lst.size, "userRecentRatingList" to lst)
     }
 
     "GetUserMapArea" {
