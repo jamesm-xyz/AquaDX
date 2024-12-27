@@ -138,6 +138,8 @@ export const EN_REF_SETTINGS = {
   'settings.fields.waccaInfiniteWp.desc': 'Set WP to 999999',
   'settings.fields.waccaAlwaysVip.name': 'Wacca: Always VIP',
   'settings.fields.waccaAlwaysVip.desc': 'Set VIP expiration date to 2077-01-01',
+  'settings.fields.chusanTeamName.name': 'Chunithm Team Name',
+  'settings.fields.chusanTeamName.desc': 'Customize the text displayed on the top of your profile.',
   'settings.fields.rounding.name': 'Score Rounding',
   'settings.fields.rounding.desc': 'Round the score to one decimal place',
   'settings.fields.optOutOfLeaderboard.name': 'Opt Out of Leaderboard',

@@ -125,8 +125,10 @@ export type AllMusic = { [key: string]: MusicMeta }
 export interface GameOption {
   key: string
   value: any
-  type: 'Boolean'
+  type: 'Boolean' | 'String'
   game: string
+
+  changed?: boolean
 }
 
 export interface UserBox {
