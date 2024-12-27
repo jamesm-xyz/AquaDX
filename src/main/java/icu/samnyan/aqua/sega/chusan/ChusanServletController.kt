@@ -258,17 +258,18 @@ fun ChusanServletController.init() {
         mapOf("userId" to uid, "kind" to kind, "length" to lst.size, "nextIndex" to -1, "userFavoriteItemList" to lst)
     }
 
-    val userPreviewKeys = ("lastLoginDate,userName,reincarnationNum,level,exp,playerRating,lastGameId,lastRomVersion," +
-        "lastDataVersion,lastPlayDate,trophyId,classEmblemMedal,classEmblemBase,battleRankId").split(',').toSet()
+    val userPreviewKeys = ("userName,reincarnationNum,level,exp,playerRating,lastGameId,lastRomVersion," +
+        "lastDataVersion,trophyId,classEmblemMedal,classEmblemBase,battleRankId").split(',').toSet()
 
     "GetUserPreview" {
         val user = db.userData.findByCard_ExtId(uid)() ?: (400 - "User not found")
         val chara = db.userCharacter.findByUserAndCharacterId(user, user.characterId)
         val option = db.userGameOption.findSingleByUser(user)()
-        val userDict = mapper.toMap(mapper.write(user)).filterKeys { it in userPreviewKeys }
+        val userDict = user.toJson().jsonMap().filterKeys { it in userPreviewKeys }
 
         mapOf(
             "userId" to uid, "isLogin" to false, "emoneyBrandId" to 0,
+            "lastLoginDate" to user.lastLoginDate, "lastPlayDate" to user.lastPlayDate,
             "userCharacter" to chara,
             "playerLevel" to option?.playerLevel,
             "rating" to option?.rating,
