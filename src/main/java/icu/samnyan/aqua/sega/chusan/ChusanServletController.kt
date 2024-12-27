@@ -286,7 +286,7 @@ fun ChusanServletController.init() {
         val lst = db.userGeneralData.findByUser_Card_ExtIdAndPropertyKey(uid, "recent_rating_list")()
             ?.propertyValue?.ifBlank { null }
             ?.split(',')?.dropLastWhile { it.isEmpty() }?.map { it.split(':') }
-            ?.map { (musicId, level, ver, score) -> UserRecentRating(musicId.int, level.int, ver, score.int) }
+            ?.map { (musicId, level, score) -> UserRecentRating(musicId.int, level.int, "2000001", score.int) }
             ?: listOf()
 
         mapOf("userId" to uid, "length" to lst.size, "userRecentRatingList" to lst)
