@@ -10,6 +10,7 @@ import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingMemberInfo
 import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingWaitState
 import icu.samnyan.aqua.sega.chusan.model.response.data.UserEmoney
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserCharge
+import icu.samnyan.aqua.sega.chusan.model.userdata.UserMusicDetail
 import icu.samnyan.aqua.sega.general.BaseHandler
 import icu.samnyan.aqua.sega.general.RequestContext
 import icu.samnyan.aqua.sega.general.SpecialHandler
@@ -33,8 +34,6 @@ import kotlin.reflect.full.declaredMemberProperties
 @API(value = ["/g/chu3/{version}/ChuniServlet", "/g/chu3/{version}"])
 class ChusanServletController(
     val gameLogin: GameLoginHandler,
-    val getUserMusic: GetUserMusicHandler,
-    val getUserRecentRating: GetUserRecentRatingHandler,
     val upsertUserAll: UpsertUserAllHandler,
     val cmGetUserCharacter: CMGetUserCharacterHandler,
     val cmUpsertUserGacha: CMUpsertUserGachaHandler,
@@ -50,10 +49,8 @@ class ChusanServletController(
     val log = LoggerFactory.getLogger(ChusanServletController::class.java)
 
     // Below are code related to handling the handlers
-    val externalHandlers = mutableListOf(
-        "GameLoginApi", "GetUserMusicApi", "UpsertUserAllApi",
-        "CMGetUserCharacterApi", "CMUpsertUserGachaApi",
-        "CMUpsertUserPrintCancelApi", "CMUpsertUserPrintSubtractApi")
+    val externalHandlers = mutableListOf("GameLoginApi", "UpsertUserAllApi", "CMGetUserCharacterApi",
+        "CMUpsertUserGachaApi", "CMUpsertUserPrintCancelApi", "CMUpsertUserPrintSubtractApi")
 
     val noopEndpoint = setOf("UpsertClientBookkeepingApi", "UpsertClientDevelopApi", "UpsertClientErrorApi",
         "UpsertClientSettingApi", "UpsertClientTestmodeApi", "CreateTokenApi", "RemoveTokenApi", "UpsertClientUploadApi",
@@ -261,6 +258,19 @@ fun ChusanServletController.init() {
             "headphone" to option?.headphone,
             "chargeState" to 1, "userNameEx" to "", "banState" to 0,
         ) + userDict
+    }
+
+    "GetUserMusic" {
+        // Compatibility: Older chusan uses boolean for isSuccess
+        fun checkAncient(d: List<UserMusicDetail>) =
+            data["version"]?.double?.let { if (it >= 2.15) d else d.map {
+                d.toJson().jsonMap().toMutableMap().apply { this["isSuccess"] = this["isSuccess"].truthy }
+            } } ?: d
+
+        val lst = db.userMusicDetail.findByUser_Card_ExtId(uid).groupBy { it.musicId }
+            .mapValues { mapOf("length" to it.value.size, "userMusicDetailList" to checkAncient(it.value)) }
+
+        mapOf("userId" to uid, "length" to lst.size, "nextIndex" to -1, "userMusicList" to lst.values)
     }
 
     "GetUserLoginBonus" api@ {
