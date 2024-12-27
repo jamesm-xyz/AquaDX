@@ -290,8 +290,8 @@ fun ChusanServletController.init() {
 
     "GetUserTeam" {
         val playDate = parsing { data["playDate"] as String }
-        val team = db.userData.findByCard_ExtId(uid)()?.card?.aquaUser?.gameOptions?.chusanTeamName
-            ?: props.teamName ?:  "一緒に歌おう！"
+        val team = db.userData.findByCard_ExtId(uid)()?.card?.aquaUser?.gameOptions?.chusanTeamName?.ifBlank { null }
+            ?: props.teamName?.ifBlank { null } ?:  "一緒に歌おう！"
         val teamStr = String(team.toByteArray(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8)
 
         mapOf(
