@@ -54,7 +54,7 @@ class ChusanServletController(
     // Below are code related to handling the handlers
     val externalHandlers = mutableListOf(
         "GameLoginApi", "GetUserLoginBonusApi", "GetUserMusicApi", "GetUserRecentRatingApi", "UpsertUserAllApi",
-        "CMGetUserCharacterApi", "CMGetUserItemApi", "CMGetUserPreviewApi", "CMUpsertUserGachaApi",
+        "CMGetUserCharacterApi", "CMUpsertUserGachaApi",
         "CMUpsertUserPrintCancelApi", "CMUpsertUserPrintSubtractApi")
 
     val noopEndpoint = setOf("UpsertClientBookkeepingApi", "UpsertClientDevelopApi", "UpsertClientErrorApi",
@@ -64,6 +64,7 @@ class ChusanServletController(
     // Fun!
     val initH = mutableMapOf<String, SpecialHandler>()
     infix operator fun String.invoke(fn: SpecialHandler) = initH.set("${this}Api", fn)
+    infix fun List<String>.all(fn: SpecialHandler) = forEach { it(fn) }
     infix fun String.static(fn: () -> Any) = mapper.write(fn()).let { resp -> this { resp } }
     val meow = init()
 
@@ -218,7 +219,7 @@ fun ChusanServletController.init() {
         }
     }
 
-    "GetUserItem" {
+    ls("GetUserItem", "CMGetUserItem") all {
         val kind = parsing { (data["nextIndex"]!!.long / 10000000000L).int }
         val lst = db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind)
 
@@ -341,5 +342,9 @@ fun ChusanServletController.init() {
         val user = db.userData.findByCard_ExtId(uid)() ?: (400 - "User not found")
         user.userEmoney = UserEmoney()
         mapOf("userId" to uid, "userData" to user, "userEmoney" to user.userEmoney)
+    }
+    "CMGetUserPreview" {
+        val user = db.userData.findByCard_ExtId(uid)() ?: (400 - "User not found")
+        mapOf("userName" to user.userName, "level" to user.level, "medal" to user.medal, "lastDataVersion" to user.lastDataVersion, "isLogin" to false)
     }
 }
