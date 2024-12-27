@@ -4,7 +4,7 @@
   import { slide } from "svelte/transition";
   import { DATA_HOST } from "../libs/config";
   import { t } from "../libs/i18n";
-  import { type GameName, getMult, roundFloor } from "../libs/scoring";
+  import { type GameName, getMult, parseComposition, roundFloor } from "../libs/scoring";
   import { coverNotFound } from "../libs/ui";
   import type { MusicMeta } from "../libs/generalTypes";
   import { tooltip } from "../libs/ui";
@@ -14,47 +14,35 @@
   export let meta: MusicMeta
   export let game: GameName
 
-  let mapData = g.split(":").map(Number)
-  let mult = getMult(mapData[3], game)
-  let mapRank: number | undefined = meta?.notes?.[mapData[1] === 10 ? 0 : mapData[1]]?.lv
-  const rounding = useLocalStorage("rounding", true);
-
-  let gameIndexMap = {
-  'mai2': 3,
-  'ongeki': 2,
-  'chu3': 2
-  };
-
-  let gameIndex = gameIndexMap[game as keyof typeof gameIndexMap];
-  </script>
+  // // mapData: [id, difficulty, score, rank]
+  // let mapData = g.split(":").map(Number)
+  // // mult: [score cutoff, rank multiplier, rank text]
+  // let mult = getMult(mapData[3], game)
+  // let mapRank: number | undefined = meta?.notes?.[mapData[1] === 10 ? 0 : mapData[1]]?.lv
+  const p = parseComposition(g, meta, game)
+  const rounding = useLocalStorage("rounding", true)
+</script>
 
 <div class="map-detail-container" transition:slide>
   <div class="scores">
     <div>
-      <img src={`${DATA_HOST}/d/${game}/music/00${mapData[0].toString().padStart(6, '0').substring(2)}.png`} alt="" on:error={coverNotFound} />
+      <img src={p.img} alt="" on:error={coverNotFound} />
       <div class="info">
         <div class="first-line">
           <div class="song-title">{meta?.name ?? t("UserHome.UnknownSong")}</div>
-          <span class={`lv level-${mapData[1] === 10 ? 3 : mapData[1]}`}>
-            { mapRank ?? '-' }
+          <span class={`lv level-${p.diffId === 10 ? 3 : p.diffId}`}>
+            { p.difficulty ?? '-' }
           </span>
         </div>
         <div class="second-line">
-          <span class={`rank-${getMult(mapData[gameIndex], game)[2].toString()[0]}`}>
-
-            <span class="rank-text">{("" + getMult(mapData[gameIndex], game)[2]).replace("p", "+")}</span>
-            <span class="rank-num" use:tooltip={(mapData[gameIndex] / 10000).toFixed(4)}>
-              {
-                rounding.value ?
-                  roundFloor(mapData[gameIndex], game, 1) :
-                  (mapData[gameIndex] / 10000).toFixed(4)
-              }%
+          <span class={`rank-${p.rank[0]}`}>
+            <span class="rank-text">{p.rank.replace("p", "+")}</span>
+            <span class="rank-num" use:tooltip={(p.score / 10000).toFixed(4)}>
+              {rounding.value ? roundFloor(p.score, game, 1) : (p.score / 10000).toFixed(4)}%
             </span>
           </span>
-          {#if game === 'mai2'}
-            <span class="dx-change">
-              { mapRank ? Math.floor(mapRank * mult[1] * (Math.min(100.5, mapData[3] / 10000) / 100)) : '-' }
-            </span>
+          {#if p.ratingChange !== undefined}
+            <span class="dx-change">{ p.ratingChange.toFixed(1) }</span>
           {/if}
         </div>
       </div>

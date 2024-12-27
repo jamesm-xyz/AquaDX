@@ -260,6 +260,8 @@
     <RatingComposition title="B35" comp={d.user.ratingComposition.best35} {allMusics} {game}/>
     <RatingComposition title="B15" comp={d.user.ratingComposition.best15} {allMusics} {game}/>
     <RatingComposition title="Recent 10" comp={d.user.ratingComposition.recent10} {allMusics} {game}/>
+    <RatingComposition title="N10" comp={d.user.ratingComposition.next10} {allMusics} {game}/>
+    <RatingComposition title="Recent 40" comp={d.user.ratingComposition.recent10} {allMusics} {game}/>
 
     <div class="recent">
       <h2>{t('UserHome.RecentScores')}</h2>
