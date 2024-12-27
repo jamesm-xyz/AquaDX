@@ -102,7 +102,8 @@ export function chusanRating(lv: number, score: number) {
   return 0; // C
 }
 
-interface ParsedComposition {
+export interface ParsedComposition {
+  name?: string
   musicId: number
   diffId: number // ID of the difficulty
   score: number
@@ -111,7 +112,7 @@ interface ParsedComposition {
   rank: string // e.g. 'SSS+'
   difficulty?: number // Actual difficulty of the map
   img: string
-  ratingChange?: number // Rating change after playing this map
+  ratingChange?: string // Rating change after playing this map
 }
 
 
@@ -127,17 +128,18 @@ export function parseComposition(item: string, meta: MusicMeta, game: GameName):
   const [ cutoff, mult ] = [ +tup[0], +tup[1] ]
   const rank = tup[2] as string
 
-  let diff = meta?.notes?.[mapData[1] === 10 ? 0 : mapData[1]]?.lv
+  let diff = meta?.notes?.[diffId === 10 ? 0 : diffId]?.lv
 
   function calcDxChange() {
     if (!diff) return
     if (game === 'mai2')
-      return Math.floor(diff * +mult * (Math.min(100.5, mapData[3] / 10000) / 100))
+      return Math.floor(diff * mult * (Math.min(100.5, score / 10000) / 100)).toFixed(0)
     if (game === 'chu3')
-      return chusanRating(diff, score) / 100
+      return (chusanRating(diff, score) / 100).toFixed(1)
   }
 
   return {
+    name: meta?.name,
     musicId,
     diffId,
     score,

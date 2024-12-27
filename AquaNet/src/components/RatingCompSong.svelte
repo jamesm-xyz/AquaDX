@@ -2,24 +2,14 @@
 
 <script lang="ts">
   import { slide } from "svelte/transition";
-  import { DATA_HOST } from "../libs/config";
   import { t } from "../libs/i18n";
-  import { type GameName, getMult, parseComposition, roundFloor } from "../libs/scoring";
+  import { type GameName, type ParsedComposition, roundFloor } from "../libs/scoring";
   import { coverNotFound } from "../libs/ui";
-  import type { MusicMeta } from "../libs/generalTypes";
   import { tooltip } from "../libs/ui";
   import useLocalStorage from "../libs/hooks/useLocalStorage.svelte";
 
-  export let g: string
-  export let meta: MusicMeta
   export let game: GameName
-
-  // // mapData: [id, difficulty, score, rank]
-  // let mapData = g.split(":").map(Number)
-  // // mult: [score cutoff, rank multiplier, rank text]
-  // let mult = getMult(mapData[3], game)
-  // let mapRank: number | undefined = meta?.notes?.[mapData[1] === 10 ? 0 : mapData[1]]?.lv
-  const p = parseComposition(g, meta, game)
+  export let p: ParsedComposition
   const rounding = useLocalStorage("rounding", true)
 </script>
 
@@ -29,7 +19,7 @@
       <img src={p.img} alt="" on:error={coverNotFound} />
       <div class="info">
         <div class="first-line">
-          <div class="song-title">{meta?.name ?? t("UserHome.UnknownSong")}</div>
+          <div class="song-title">{p.name ?? t("UserHome.UnknownSong")}</div>
           <span class={`lv level-${p.diffId === 10 ? 3 : p.diffId}`}>
             { p.difficulty ?? '-' }
           </span>
@@ -42,7 +32,7 @@
             </span>
           </span>
           {#if p.ratingChange !== undefined}
-            <span class="dx-change">{ p.ratingChange.toFixed(1) }</span>
+            <span class="dx-change">{ p.ratingChange }</span>
           {/if}
         </div>
       </div>
