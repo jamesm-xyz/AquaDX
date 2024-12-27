@@ -13,6 +13,7 @@ import icu.samnyan.aqua.sega.chusan.model.userdata.UserItem;
 import icu.samnyan.aqua.sega.chusan.service.UserDataService;
 import icu.samnyan.aqua.sega.chusan.service.UserItemService;
 import icu.samnyan.aqua.sega.util.jackson.BasicMapper;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import java.util.*;
 /**
  * @author samnyan (privateamusement@protonmail.com)
  */
+@AllArgsConstructor
 @Component("ChusanCMUpsertUserGachaHandler")
 public class CMUpsertUserGachaHandler implements BaseHandler {
 
@@ -34,19 +36,8 @@ public class CMUpsertUserGachaHandler implements BaseHandler {
     private final UserItemService userItemService;
     private final BasicMapper mapper;
 
-    @Autowired
-    public CMUpsertUserGachaHandler(UserItemService userItemService, UserDataService userDataService,
-                                    Chu3UserCardPrintStateRepo userCardPrintStateRepository, BasicMapper mapper,
-                                    Chu3UserGachaRepo userGachaRepository) {
-        this.userCardPrintStateRepository = userCardPrintStateRepository;
-        this.userGachaRepository = userGachaRepository;
-        this.userDataService = userDataService;
-        this.userItemService = userItemService;
-        this.mapper = mapper;
-    }
-
     @Override
-    public String handle(Map<String, ?> request) throws JsonProcessingException {
+    public Object handle(Map<String, ?> request) throws JsonProcessingException {
         String userId = String.valueOf(request.get("userId"));
         int gachaId = ((Number) request.get("gachaId")).intValue();
         int placeId = ((Number) request.get("placeId")).intValue();
@@ -105,8 +96,6 @@ public class CMUpsertUserGachaHandler implements BaseHandler {
         resultMap.put("apiName", "CMUpsertUserGachaApi");
         resultMap.put("userCardPrintStateList", userCardPrintStateList);
 
-        String json = mapper.write(resultMap);
-        logger.info("Response: " + json);
-        return json;
+        return resultMap;
     }
 }

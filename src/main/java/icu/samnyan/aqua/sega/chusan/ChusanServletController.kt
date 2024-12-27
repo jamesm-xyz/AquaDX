@@ -16,6 +16,7 @@ import icu.samnyan.aqua.sega.general.RequestContext
 import icu.samnyan.aqua.sega.general.SpecialHandler
 import icu.samnyan.aqua.sega.general.model.response.UserRecentRating
 import icu.samnyan.aqua.sega.general.toSpecial
+import icu.samnyan.aqua.sega.util.jackson.BasicMapper
 import icu.samnyan.aqua.sega.util.jackson.StringMapper
 import icu.samnyan.aqua.spring.Metrics
 import jakarta.servlet.http.HttpServletRequest
@@ -35,12 +36,12 @@ import kotlin.reflect.full.declaredMemberProperties
 class ChusanServletController(
     val gameLogin: GameLoginHandler,
     val upsertUserAll: UpsertUserAllHandler,
-    val cmGetUserCharacter: CMGetUserCharacterHandler,
     val cmUpsertUserGacha: CMUpsertUserGachaHandler,
     val cmUpsertUserPrintSubtract: CMUpsertUserPrintSubtractHandler,
     val cmUpsertUserPrintCancel: CMUpsertUserPrintCancelHandler,
 
     val mapper: StringMapper,
+    val cmMapper: BasicMapper,
     val db: Chu3Repos,
     val us: AquaUserServices,
     val versionHelper: ChusanVersionHelper,
@@ -49,7 +50,7 @@ class ChusanServletController(
     val log = LoggerFactory.getLogger(ChusanServletController::class.java)
 
     // Below are code related to handling the handlers
-    val externalHandlers = mutableListOf("GameLoginApi", "UpsertUserAllApi", "CMGetUserCharacterApi",
+    val externalHandlers = mutableListOf("GameLoginApi", "UpsertUserAllApi",
         "CMUpsertUserGachaApi", "CMUpsertUserPrintCancelApi", "CMUpsertUserPrintSubtractApi")
 
     val noopEndpoint = setOf("UpsertClientBookkeepingApi", "UpsertClientDevelopApi", "UpsertClientErrorApi",
@@ -95,10 +96,11 @@ class ChusanServletController(
             return """{"returnCode":"1"}"""
         }
         log.info("Chu3 < $api : ${data.toJson()}")
+        val map = if ("CM" in api) cmMapper else mapper
 
         return try {
             Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
-                handlers[api]!!(ctx).let { if (it is String) it else mapper.write(it) }.also {
+                handlers[api]!!(ctx).let { if (it is String) it else map.write(it) }.also {
                     if (api !in setOf("GetUserItemApi", "GetGameEventApi"))
                         log.info("Chu3 > $api : $it")
                 }
@@ -201,7 +203,7 @@ fun ChusanServletController.init() {
         mapOf("userId" to uid, "length" to lst.size, "userCardPrintStateList" to lst)
     }
 
-    "GetUserCharacter" {
+    ls("GetUserCharacter", "CMGetUserCharacter") all {
         // Let's try not paging at all
         val lst = db.userCharacter.findByUser_Card_ExtId(uid)
         mapOf("userId" to uid, "length" to lst.size, "nextIndex" to -1, "userCharacterList" to lst)

@@ -10,6 +10,7 @@ import icu.samnyan.aqua.sega.chusan.model.userdata.UserItem;
 import icu.samnyan.aqua.sega.chusan.service.UserDataService;
 import icu.samnyan.aqua.sega.chusan.service.UserItemService;
 import icu.samnyan.aqua.sega.util.jackson.BasicMapper;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import java.util.*;
 /**
  * @author samnyan (privateamusement@protonmail.com)
  */
+@AllArgsConstructor
 @Component("ChusanCMUpsertUserPrintSubtractHandler")
 public class CMUpsertUserPrintSubtractHandler implements BaseHandler {
 
@@ -28,14 +30,6 @@ public class CMUpsertUserPrintSubtractHandler implements BaseHandler {
     private final UserItemService userItemService;
     private final UserDataService userDataService;
     private final BasicMapper mapper;
-
-    @Autowired
-    public CMUpsertUserPrintSubtractHandler(UserItemService userItemService, UserDataService userDataService, Chu3UserCardPrintStateRepo userCardPrintStateRepository, BasicMapper mapper) {
-        this.userCardPrintStateRepository = userCardPrintStateRepository;
-        this.userItemService = userItemService;
-        this.userDataService = userDataService;
-        this.mapper = mapper;
-    }
 
     @Override
     public String handle(Map<String, ?> request) throws JsonProcessingException {
