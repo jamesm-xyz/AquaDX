@@ -31,6 +31,9 @@ class AquaGameOptions(
 
     @SettingField("wacca")
     var waccaAlwaysVip: Boolean = false,
+
+    @SettingField("general")
+    var chuniTeamName: String = "",
 )
 
 interface AquaGameOptionsRepo : JpaRepository<AquaGameOptions, Long>
