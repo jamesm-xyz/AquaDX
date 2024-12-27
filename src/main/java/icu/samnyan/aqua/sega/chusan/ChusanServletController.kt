@@ -235,7 +235,7 @@ fun ChusanServletController.init() {
     }
 
     "GetUserItem" {
-        val kind = parsing { (data["nextIndex"]!!.long % 10000000000L).int }
+        val kind = parsing { (data["nextIndex"]!!.long / 10000000000L).int }
         val lst = db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind)
         mapOf("userId" to uid, "length" to lst.size, "nextIndex" to -1, "itemKind" to kind, "userItemList" to lst)
     }
