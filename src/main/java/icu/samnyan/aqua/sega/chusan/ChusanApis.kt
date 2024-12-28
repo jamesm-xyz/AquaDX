@@ -11,6 +11,7 @@ import icu.samnyan.aqua.sega.general.model.response.UserRecentRating
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+@Suppress("UNCHECKED_CAST")
 val chusanInit: ChusanController.() -> Unit = {
     // Stub handlers
     "GetGameRanking" { """{"type":"${data["type"]}","length":"0","gameRankingList":[]}""" }
@@ -48,26 +49,6 @@ val chusanInit: ChusanController.() -> Unit = {
         val userGameOption = db.userGameOption.findSingleByUser_Card_ExtId(uid)() ?: (400 - "User not found")
         mapOf("userId" to uid, "userGameOption" to userGameOption)
     }
-    "GetUserActivity" {
-        val kind = parsing { data["kind"]!!.int }
-        val a = db.userActivity.findAllByUser_Card_ExtIdAndKind(uid, kind).sortedBy { -it.sortNumber }
-        mapOf("userId" to uid, "length" to a.size, "kind" to kind, "userActivityList" to a)
-    }
-
-    "GetUserCharge" {
-        val lst = db.userCharge.findByUser_Card_ExtId(uid)
-        mapOf("userId" to uid, "length" to lst.size, "userChargeList" to lst)
-    }
-
-    "GetUserDuel" {
-        val lst = db.userDuel.findByUser_Card_ExtId(uid)
-        mapOf("userId" to uid, "length" to lst.size, "userDuelList" to lst)
-    }
-
-    "GetUserGacha" {
-        val lst = db.userGacha.findByUser_Card_ExtId(uid)
-        mapOf("userId" to uid, "length" to lst.size, "userGachaList" to lst)
-    }
 
     "RollGacha" {
         val (gachaId, times) = parsing { data["gachaId"]!!.int to data["times"]!!.int }
@@ -75,11 +56,14 @@ val chusanInit: ChusanController.() -> Unit = {
         mapOf("length" to lst.size, "gameGachaCardList" to lst)
     }
 
-    "GetGameGachaCardById" { db.gameGachaCard.findAllByGachaId(parsing { data["gachaId"]!!.int }).let {
-        mapOf("gachaId" to it.size, "length" to it.size, "isPickup" to false, "gameGachaCardList" to it,
-            "emissionList" to empty, "afterCalcList" to empty
-        )
-    } }
+    "GetGameGachaCardById" {
+        val id = parsing { data["gachaId"]!!.int }
+        db.gameGachaCard.findAllByGachaId(id).let {
+            mapOf("gachaId" to id, "length" to it.size, "isPickup" to false, "gameGachaCardList" to it,
+                "emissionList" to empty, "afterCalcList" to empty
+            )
+        }
+    }
 
     "GetUserCMission" {
         parsing { UserCMissionResp().apply {
@@ -93,42 +77,45 @@ val chusanInit: ChusanController.() -> Unit = {
         }
     }
 
-    "GetUserCardPrintError" {
-        val lst = db.userCardPrintState.findByUser_Card_ExtIdAndHasCompleted(uid, false)
-        mapOf("userId" to uid, "length" to lst.size, "userCardPrintStateList" to lst)
-    }
-
+    // Paged user list endpoints
+    "GetUserCardPrintError".paged("userCardPrintErrorList") { db.userCardPrintState.findByUser_Card_ExtIdAndHasCompleted(uid, false) }
     "GetUserCharacter".paged("userCharacterList") { db.userCharacter.findByUser_Card_ExtId(uid) }
+    "GetUserCourse".paged("userCourseList") { db.userCourse.findByUser_Card_ExtId(uid) }
+    "GetUserCharge".paged("userChargeList") { db.userCharge.findByUser_Card_ExtId(uid) }
+    "GetUserDuel".paged("userDuelList") { db.userDuel.findByUser_Card_ExtId(uid) }
+    "GetUserGacha".paged("userGachaList") { db.userGacha.findByUser_Card_ExtId(uid) }
 
-    "GetUserCourse" {
-        val lst = db.userCourse.findByUser_Card_ExtId(uid)
-        mutableMapOf("userId" to uid, "length" to lst.size, "userCourseList" to lst).apply {
-            if (data.containsKey("nextIndex")) this["nextIndex"] = -1
+    // Paged user list endpoints that has a kind in their request
+    "GetUserActivity".pagedWithKind("userActivityList") {
+        val kind = parsing { data["kind"]!!.int }
+        mapOf("kind" to kind) to {
+            db.userActivity.findAllByUser_Card_ExtIdAndKind(uid, kind).sortedBy { -it.sortNumber }
         }
     }
 
-    "GetUserItem" {
-        val kind = parsing { (data["nextIndex"]!!.long / 10000000000L).int }
-        val maxCount = parsing { data["maxCount"]!!.int }
-        // TODO pagination
-        val lst = db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind).take(maxCount)
-
-        // TODO: All unlock
-        mapOf("userId" to uid, "length" to lst.size, "nextIndex" to -1, "itemKind" to kind, "userItemList" to lst)
+    "GetUserItem".pagedWithKind("userItemList") {
+        val rawIndex = data["nextIndex"]!!.long
+        val kind = parsing { (rawIndex / 10000000000L).int }
+        data["kind"] = kind
+        data["nextIndex"] = rawIndex % 10000000000L
+        mapOf("itemKind" to kind) to {
+            // TODO: All unlock
+            db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind)
+        }
     }
 
-    "GetUserFavoriteItem" {
+    "GetUserFavoriteItem".pagedWithKind("userFavoriteItemList") {
         val kind = parsing { data["kind"]!!.int }
+        mapOf("kind" to kind) to {
+            // TODO: Actually store this info at UpsertUserAll
+            val fav = when (kind) {
+                1 -> "favorite_music"
+                3 -> "favorite_chara"
+                else -> null
+            }?.let { db.userGeneralData.findByUser_Card_ExtIdAndPropertyKey(uid, it)() }?.propertyValue
 
-        // TODO: Actually store this info at UpsertUserAll
-        val fav = when (kind) {
-            1 -> "favorite_music"
-            3 -> "favorite_chara"
-            else -> null
-        }?.let { db.userGeneralData.findByUser_Card_ExtIdAndPropertyKey(uid, it)() }?.propertyValue
-
-        val lst = fav?.ifBlank { null }?.split(",")?.map { it.int } ?: emptyList()
-        mapOf("userId" to uid, "kind" to kind, "length" to lst.size, "nextIndex" to -1, "userFavoriteItemList" to lst)
+            fav?.ifBlank { null }?.split(",")?.map { it.int } ?: emptyList()
+        }
     }
 
     val userPreviewKeys = ("userName,reincarnationNum,level,exp,playerRating,lastGameId,lastRomVersion," +
@@ -151,34 +138,28 @@ val chusanInit: ChusanController.() -> Unit = {
         ) + userDict
     }
 
-    "GetUserMusic" {
+    "GetUserMusic".paged("userMusicList") {
         // Compatibility: Older chusan uses boolean for isSuccess
         fun checkAncient(d: List<UserMusicDetail>) =
             data["version"]?.double?.let { if (it >= 2.15) d else d.map {
                 d.toJson().jsonMap().toMutableMap().apply { this["isSuccess"] = this["isSuccess"].truthy }
             } } ?: d
 
-        val lst = db.userMusicDetail.findByUser_Card_ExtId(uid).groupBy { it.musicId }
+        db.userMusicDetail.findByUser_Card_ExtId(uid).groupBy { it.musicId }
             .mapValues { mapOf("length" to it.value.size, "userMusicDetailList" to checkAncient(it.value)) }
-
-        mapOf("userId" to uid, "length" to lst.size, "nextIndex" to -1, "userMusicList" to lst.values)
+            .values.toList()
     }
 
-    "GetUserLoginBonus" api@ {
-        if (!props.loginBonusEnable) return@api mapOf("userId" to uid, "length" to 0, "userLoginBonusList" to empty)
-
-        val lst = db.userLoginBonus.findAllLoginBonus(uid.int, 1, 0)
-        mapOf("userId" to uid, "length" to lst.size, "userLoginBonusList" to lst)
+    "GetUserLoginBonus".paged("userLoginBonusList") {
+        if (!props.loginBonusEnable) empty else db.userLoginBonus.findAllLoginBonus(uid.int, 1, 0)
     }
 
-    "GetUserRecentRating" {
-        val lst = db.userGeneralData.findByUser_Card_ExtIdAndPropertyKey(uid, "recent_rating_list")()
+    "GetUserRecentRating".paged("userRecentRatingList") {
+        db.userGeneralData.findByUser_Card_ExtIdAndPropertyKey(uid, "recent_rating_list")()
             ?.propertyValue?.ifBlank { null }
             ?.split(',')?.dropLastWhile { it.isEmpty() }?.map { it.split(':') }
             ?.map { (musicId, level, score) -> UserRecentRating(musicId.int, level.int, "2000001", score.int) }
             ?: listOf()
-
-        mapOf("userId" to uid, "length" to lst.size, "userRecentRatingList" to lst)
     }
 
     "GetUserMapArea" {
