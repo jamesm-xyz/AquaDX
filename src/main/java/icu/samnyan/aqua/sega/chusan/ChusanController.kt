@@ -3,6 +3,7 @@ package icu.samnyan.aqua.sega.chusan
 import ext.*
 import icu.samnyan.aqua.net.db.AquaUserServices
 import icu.samnyan.aqua.net.utils.simpleDescribe
+import icu.samnyan.aqua.sega.allnet.TokenChecker
 import icu.samnyan.aqua.sega.chusan.handler.*
 import icu.samnyan.aqua.sega.chusan.model.Chu3Repos
 import icu.samnyan.aqua.sega.general.*
@@ -83,7 +84,8 @@ class ChusanController(
             log.info("Chu3 > $api no-op")
             return """{"returnCode":"1"}"""
         }
-        log.info("Chu3 < $api : ${data.toJson()}")
+        val token = TokenChecker.getCurrentSession()?.token?.substring(0, 6) ?: "NO-TOKEN"
+        log.info("Chu3 < $api : ${data.toJson()} : [$token]")
 
         return try {
             Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
