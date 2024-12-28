@@ -117,7 +117,9 @@ export interface MusicMeta {
     designer: string
     lv_id: number
     notes: number
-  }[]
+  }[],
+  worldsEndTag?: string
+  worldsEndStars?: number
 }
 
 export type AllMusic = { [key: string]: MusicMeta }

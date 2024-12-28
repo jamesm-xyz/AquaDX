@@ -89,7 +89,6 @@ export function roundFloor(achievement: number, game: GameName, digits = 2) {
 }
 
 export function chusanRating(lv: number, score: number) {
-  console.log(lv)
   lv = lv * 100
   if (score >= 1009000) return lv + 215; // SSS+
   if (score >= 1007500) return lv + 200 + (score - 1007500) / 100; // SSS
@@ -127,7 +126,7 @@ export function parseComposition(item: string, allMusics: Record<string, MusicMe
   // Get score multiplier
   const tup = getMult(score, game)
   const [ cutoff, mult ] = [ +tup[0], +tup[1] ]
-  const rank = tup[2] as string
+  const rank = "" + tup[2]
 
   let diff = meta?.notes?.[diffId === 10 ? 0 : diffId]?.lv
 

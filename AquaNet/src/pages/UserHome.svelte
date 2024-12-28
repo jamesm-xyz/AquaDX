@@ -277,8 +277,10 @@
                 {:else if r.isFullCombo}
                   <img src="/assets/imgs/Full Combo.png" alt="Full Combo" />
                 {/if}
-                <span class={`lv level-${r.level === 10 ? 3 : r.level}`}>
-                  { r.notes?.[r.level === 10 ? 0 : r.level]?.lv?.toFixed(1) ?? '-' }
+                <span class={`lv level-${r.level === 10 ? 5 : r.level}`}>
+                  <span>
+                    {r.notes?.[r.level === 10 ? 0 : r.level]?.lv?.toFixed(1) ?? r.worldsEndTag ?? '-'}
+                  </span>
                 </span>
                 <span class={`rank-${getMult(r.achievement, game)[2].toString()[0]}`}>
                   <span class="rank-text">{("" + getMult(r.achievement, game)[2]).replace("p", "+")}</span>
@@ -492,6 +494,7 @@
           flex: 1
           display: flex
           justify-content: space-between
+          align-items: center
           overflow: hidden
 
           // Limit song name to one line
@@ -506,6 +509,7 @@
           > div:last-child
             white-space: nowrap
             display: flex
+            align-items: center
             gap: 10px
 
             img
@@ -546,6 +550,15 @@
           background: rgba(var(--lv-color), 0.6)
           padding: 0 6px
           border-radius: vars.$border-radius
+
+        .lv.level-5 > span
+          color: transparent
+          background: var(--lv-text-clip)
+          background-clip: text
+          -webkit-background-clip: text
+          font-weight: bold
+          font-size: 1em
+          font-family: 'Arial Black', sans-serif
 
         span
           display: inline-block
