@@ -41,6 +41,7 @@ typealias Bool = Boolean
 typealias JavaSerializable = java.io.Serializable
 
 typealias JDict = Map<String, Any?>
+typealias MutJDict = MutableMap<String, Any?>
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.RUNTIME)
@@ -136,6 +137,7 @@ fun Map<String, Any>.toUrl() = entries.joinToString("&") { (k, v) -> "$k=$v" }
 fun String.firstCharLower() = replaceFirstChar { it.lowercase() }
 
 fun Any.long() = when (this) {
+    is Long -> this
     is Boolean -> if (this) 1L else 0
     is Number -> toLong()
     is String -> toLong()

@@ -88,7 +88,7 @@ val chusanInit: ChusanController.() -> Unit = {
     // Paged user list endpoints that has a kind in their request
     "GetUserActivity".pagedWithKind("userActivityList") {
         val kind = parsing { data["kind"]!!.int }
-        mapOf("kind" to kind) to {
+        mapOf("kind" to kind) grabs {
             db.userActivity.findAllByUser_Card_ExtIdAndKind(uid, kind).sortedBy { -it.sortNumber }
         }
     }
@@ -97,15 +97,17 @@ val chusanInit: ChusanController.() -> Unit = {
         val rawIndex = data["nextIndex"]!!.long
         val kind = parsing { (rawIndex / 10000000000L).int }
         data["nextIndex"] = rawIndex % 10000000000L
-        mapOf("itemKind" to kind) to {
+        mapOf("itemKind" to kind) grabs {
             // TODO: All unlock
             db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind)
+        } postProcess {
+            it["nextIndex"] = rawIndex + (kind * 10000000000L)
         }
     }
 
     "GetUserFavoriteItem".pagedWithKind("userFavoriteItemList") {
         val kind = parsing { data["kind"]!!.int }
-        mapOf("kind" to kind) to {
+        mapOf("kind" to kind) grabs {
             // TODO: Actually store this info at UpsertUserAll
             val fav = when (kind) {
                 1 -> "favorite_music"

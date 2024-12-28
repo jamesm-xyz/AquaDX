@@ -25,7 +25,9 @@ typealias SpecialHandler = RequestContext.() -> Any?
 fun BaseHandler.toSpecial() = { ctx: RequestContext -> handle(ctx.data) }
 
 typealias PagedHandler = RequestContext.() -> List<Any>
-typealias AddFn = RequestContext.() -> Pair<Map<String, Any>?, PagedHandler>
+typealias AddFn = RequestContext.() -> PagedProcessor
+typealias PagePost = (MutJDict) -> Unit
+data class PagedProcessor(val add: JDict?, val fn: PagedHandler, var post: PagePost? = null)
 
 // A very :3 way of declaring APIs
 abstract class MeowApi(val serialize: (String, Any?) -> String) {
@@ -37,14 +39,14 @@ abstract class MeowApi(val serialize: (String, Any?) -> String) {
     val pageCache = mutableMapOf<String, Pair<Long, List<Any>>>()
 
     fun String.pagedWithKind(key: String, addFn: AddFn) = this api@ {
-        val (maybeAdd, fn) = addFn()
-        val add = maybeAdd ?: emptyMap()
+        val p = addFn()
+        val add = p.add ?: emptyMap()
 
-        if (nextIndex == -1) return@api fn().let { mapOf("userId" to uid, "length" to it.size, key to it) + add }
+        if (nextIndex == -1) return@api p.fn(this).let { mapOf("userId" to uid, "length" to it.size, key to it) + add }
 
         // Try to get cache
         val cacheKey = "$key:$uid:$add"
-        val list = pageCache.getOrPut(cacheKey) { fn().let {
+        val list = pageCache.getOrPut(cacheKey) { p.fn(this).let {
             if (it.size > maxCount) millis() to it
             else return@api mapOf("userId" to uid, "length" to it.size, "nextIndex" to -1, key to it) + add
         } }.r
@@ -60,9 +62,12 @@ abstract class MeowApi(val serialize: (String, Any?) -> String) {
         }
         else pageCache[cacheKey] = millis() to list
 
-        mapOf("userId" to uid, "length" to lst.size, "nextIndex" to iAfter, key to lst) + add
+        (mapOf("userId" to uid, "length" to lst.size, "nextIndex" to iAfter, key to lst) + add).toMutableMap()
+            .also { p.post?.invoke(it) }
     }
-    fun String.paged(key: String, fn: PagedHandler) = pagedWithKind(key) { null to fn }
+    fun String.paged(key: String, fn: PagedHandler) = pagedWithKind(key) { PagedProcessor(null, fn) }
+    infix fun JDict.grabs(fn: PagedHandler) = PagedProcessor(this, fn, null)
+    infix fun PagedProcessor.postProcess(post: PagePost) = also { it.post = post }
 
     // Page cache cleanup every minute
     @Scheduled(fixedRate = (1000 * 60))
