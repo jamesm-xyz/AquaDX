@@ -96,7 +96,6 @@ val chusanInit: ChusanController.() -> Unit = {
     "GetUserItem".pagedWithKind("userItemList") {
         val rawIndex = data["nextIndex"]!!.long
         val kind = parsing { (rawIndex / 10000000000L).int }
-        data["kind"] = kind
         data["nextIndex"] = rawIndex % 10000000000L
         mapOf("itemKind" to kind) to {
             // TODO: All unlock
@@ -195,7 +194,7 @@ val chusanInit: ChusanController.() -> Unit = {
 
         mapOf(
             "gameSetting" to mapOf(
-                "romVersion" to "$version.00",  // Chusan checks these two versions to determine if it can enable game modes
+                "romVersion" to "$version.00",
                 "dataVersion" to versionHelper[data["clientId"].toString()],
                 "isMaintenance" to false,
                 "requestInterval" to 0,
