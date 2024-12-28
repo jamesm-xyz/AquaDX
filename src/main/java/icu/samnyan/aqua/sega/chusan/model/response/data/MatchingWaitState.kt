@@ -7,6 +7,6 @@ class MatchingWaitState(
 
     @JsonProperty("isFinish")
     var isFinish: Boolean = false,
-    var restMSec: Int = 30000,
-    var pollingInterval: Int = 10,
+    var restMSec: Int = 120,
+    var pollingInterval: Int = 1,
 )

@@ -30,13 +30,44 @@ val chusanInit: ChusanController.() -> Unit = {
     "CMUpsertUserPrint" { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintApi"}""" }
     "CMUpsertUserPrintlog" { """{"returnCode":1,"orderId":"0","serialId":"FAKECARDIMAG12345678","apiName":"CMUpsertUserPrintlogApi"}""" }
 
-    // Matching TODO: Actually implement this
-    "EndMatching" { """{"matchingResult":{"matchingMemberInfoList":[],"matchingMemberRoleList":[],"reflectorUri":""}}""" }
-    "GetMatchingState" { """{"matchingWaitState":{"restMSec":"30000","pollingInterval":"10","matchingMemberInfoList":[],"isFinish":"true"}}""" }
+    // Matching
+    data class MatchingRoom(val members: MutableList<MatchingMemberInfo>, val startTime: Long)
+    val matchingRooms = mutableMapOf<Int, MatchingRoom>()
+    var matchingLast = 0
+    val matchingTime = 120  // Seconds
 
     "BeginMatching" {
         val memberInfo = parsing { mapper.convert<MatchingMemberInfo>(data["matchingMemberInfo"] as JDict) }
-        mapOf("roomId" to 1, "matchingWaitState" to MatchingWaitState(listOf(memberInfo)))
+
+        // Check if there are any room available with less than 4 members and not started
+        var id = matchingRooms.entries.find { it.value.members.size < 4 && it.value.startTime == 0L }?.key
+        if (id == null) {
+            matchingLast += 1
+            id = matchingLast
+            matchingRooms[id] = MatchingRoom(mutableListOf(memberInfo), millis())
+        }
+
+        mapOf("roomId" to id, "matchingWaitState" to MatchingWaitState(listOf(memberInfo)))
+    }
+
+    "GetMatchingState" api@ {
+        val roomId = parsing { data["roomId"]!!.int }
+        val room = matchingRooms[roomId] ?: return@api null
+        val dt = matchingTime - (millis() - room.startTime) / 1000
+        val ended = room.members.size == 4 || dt <= 0
+
+        mapOf("roomId" to roomId, "matchingWaitState" to MatchingWaitState(room.members, ended, dt.int, 1))
+    }
+
+    "EndMatching" api@ {
+        val roomId = parsing { data["roomId"]!!.int }
+        val room = matchingRooms[roomId] ?: return@api null
+        mapOf(
+            "matchingMemberInfoList" to room.members,
+            "matchingMemberRoleList" to room.members.indices.map { mapOf("role" to it) },
+            "matchingResult" to 1,
+            "reflectorUri" to "http://reflector.naominet.live:18080/"
+        )
     }
 
     // User handlers
@@ -191,7 +222,7 @@ val chusanInit: ChusanController.() -> Unit = {
 
         // Get the request url as te address
         val addr = (req.getHeader("wrapper original url") ?: req.requestURL.toString())
-            .removeSuffix("GetGameSettingApi")
+            .removeSuffix("GetGameSettingApi").removeSuffix("ChuniServlet/")
         val now = jstNow()
 
         mapOf(
@@ -212,8 +243,14 @@ val chusanInit: ChusanController.() -> Unit = {
                 "matchErrorLimit" to 10,
                 "matchingUri" to addr,
                 "matchingUriX" to addr,
-                "udpHolePunchUri" to addr,
-                "reflectorUri" to addr
+//                "udpHolePunchUri" to addr,
+//                "reflectorUri" to addr
+
+                // Thanks to rinsama!
+//                "matchingUri" to "http://chu3-match.sega.ink/",
+//                "matchingUriX" to "http://chu3-match.sega.ink/",
+                "udpHolePunchUri" to "http://reflector.naominet.live:18080/",
+                "reflectorUri" to "http://reflector.naominet.live:18080/",
             ),
             "isDumpUpload" to false,
             "isAou" to false
