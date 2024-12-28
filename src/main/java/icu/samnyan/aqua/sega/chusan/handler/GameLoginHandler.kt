@@ -22,7 +22,7 @@ class GameLoginHandler(
     val props: ChusanProps,
     val db: Chu3Repos
 ) : BaseHandler {
-    
+
     override fun handle(request: Map<String, Any>): Any? {
         val uid = request["userId"]!!.long
         fun process() {

@@ -98,11 +98,7 @@ val chusanInit: ChusanController.() -> Unit = {
         mapOf("userId" to uid, "length" to lst.size, "userCardPrintStateList" to lst)
     }
 
-    ls("GetUserCharacter", "CMGetUserCharacter") all {
-        // Let's try not paging at all
-        val lst = db.userCharacter.findByUser_Card_ExtId(uid)
-        mapOf("userId" to uid, "length" to lst.size, "nextIndex" to -1, "userCharacterList" to lst)
-    }
+    "GetUserCharacter".paged("userCharacterList") { db.userCharacter.findByUser_Card_ExtId(uid) }
 
     "GetUserCourse" {
         val lst = db.userCourse.findByUser_Card_ExtId(uid)
@@ -111,7 +107,7 @@ val chusanInit: ChusanController.() -> Unit = {
         }
     }
 
-    ls("GetUserItem", "CMGetUserItem") all {
+    "GetUserItem" {
         val kind = parsing { (data["nextIndex"]!!.long / 10000000000L).int }
         val maxCount = parsing { data["maxCount"]!!.int }
         // TODO pagination

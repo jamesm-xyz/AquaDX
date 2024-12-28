@@ -1,9 +1,9 @@
 package icu.samnyan.aqua.sega.general
 
 import com.fasterxml.jackson.core.JsonProcessingException
-import ext.long
-import ext.parsing
+import ext.*
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.scheduling.annotation.Scheduled
 
 
 fun interface BaseHandler {
@@ -11,20 +11,59 @@ fun interface BaseHandler {
     fun handle(request: Map<String, Any>): Any?
 }
 
-data class RequestContext(
+class RequestContext(
     val req: HttpServletRequest,
     val data: Map<String, Any>,
 ) {
     val uid by lazy { parsing { data["userId"]!!.long } }
+    val nextIndex by lazy { parsing { data["nextIndex"]?.int ?: -1 } }
+    val maxCount by lazy { parsing { data["maxCount"]?.int ?: Int.MAX_VALUE } }
 }
 
 typealias SpecialHandler = RequestContext.() -> Any?
 fun BaseHandler.toSpecial() = { ctx: RequestContext -> handle(ctx.data) }
 
+typealias PagedHandler = RequestContext.() -> List<Any>
+typealias AddFn = RequestContext.() -> Map<String, Any>
+
 // A very :3 way of declaring APIs
 abstract class MeowApi(val serialize: (String, Any?) -> String) {
     val initH = mutableMapOf<String, SpecialHandler>()
     infix operator fun String.invoke(fn: SpecialHandler) = initH.set("${this}Api", fn)
-    infix fun List<String>.all(fn: SpecialHandler) = forEach { it(fn) }
     infix fun String.static(fn: () -> Any) = serialize(this, fn()).let { resp -> this { resp } }
+
+    // Page Cache: {cache key: (timestamp, full list)}
+    val pageCache = mutableMapOf<String, Pair<Long, List<Any>>>()
+
+    private fun String.pagedHelper(key: String, fn: PagedHandler, addFn: AddFn?) = this api@ {
+        val add = addFn?.invoke(this) ?: emptyMap()
+
+        if (nextIndex == -1) return@api fn().let {
+            mapOf("userId" to uid, "length" to it.size, "nextIndex" to -1, key to it) + add
+        }
+
+        // Try to get cache
+        val cacheKey = "$this:$uid:$add"
+        val list = pageCache.getOrPut(cacheKey) { millis() to fn() }.r
+
+        // Get sublist and next index
+        val iAfter = (nextIndex + maxCount).coerceAtMost(list.size)
+        val lst = list.slice(nextIndex until iAfter)
+
+        // Update cache if needed
+        if (iAfter == list.size) pageCache.remove(cacheKey)
+        else pageCache[cacheKey] = millis() to list
+
+        mapOf("userId" to uid, "length" to lst.size, "nextIndex" to iAfter, key to lst) + add
+    }
+    fun String.paged(key: String, fn: PagedHandler) = pagedHelper(key, fn, null)
+    fun String.pagedWith(key: String, fn: PagedHandler) = this to key to fn
+    infix fun Pair<String, Pair<String, PagedHandler>>.with(addFn: AddFn) = l.pagedHelper(r.l, r.r, addFn)
+
+    // Page cache cleanup every minute
+    @Scheduled(fixedRate = (1000 * 60))
+    fun cleanupCache() {
+        val minTime = millis() - (1000 * 60)
+        pageCache.entries.removeIf { it.value.l < minTime }
+    }
 }
