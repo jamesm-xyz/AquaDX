@@ -42,8 +42,7 @@ val chusanInit: ChusanController.() -> Unit = {
 
     // User handlers
     "GetUserData" {
-        val user = db.userData.findByCard_ExtId(uid)() ?: (400 - "User not found")
-        mapOf("userId" to uid, "userData" to user)
+        db.userData.findByCard_ExtId(uid)()?.let{ u -> mapOf("userId" to uid, "userData" to u) }
     }
     "GetUserOption" {
         val userGameOption = db.userGameOption.findSingleByUser_Card_ExtId(uid)() ?: (400 - "User not found")
@@ -123,8 +122,8 @@ val chusanInit: ChusanController.() -> Unit = {
     val userPreviewKeys = ("userName,reincarnationNum,level,exp,playerRating,lastGameId,lastRomVersion," +
         "lastDataVersion,trophyId,classEmblemMedal,classEmblemBase,battleRankId").split(',').toSet()
 
-    "GetUserPreview" {
-        val user = db.userData.findByCard_ExtId(uid)() ?: (400 - "User not found")
+    "GetUserPreview" api@ {
+        val user = db.userData.findByCard_ExtId(uid)() ?: return@api null
         val chara = db.userCharacter.findByUserAndCharacterId(user, user.characterId)
         val option = db.userGameOption.findSingleByUser(user)()
         val userDict = user.toJson().jsonMap().filterKeys { it in userPreviewKeys }
