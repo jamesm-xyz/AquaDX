@@ -101,7 +101,8 @@ val chusanInit: ChusanController.() -> Unit = {
             // TODO: All unlock
             db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind)
         } postProcess {
-            it["nextIndex"] = it["nextIndex"]!!.long + (kind * 10000000000L)
+            val ni = it["nextIndex"]!!.long
+            if (ni != -1L) it["nextIndex"] = ni + (kind * 10000000000L)
         }
     }
 
