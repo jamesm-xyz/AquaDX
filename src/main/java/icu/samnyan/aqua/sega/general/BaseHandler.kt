@@ -43,7 +43,7 @@ abstract class MeowApi(val serialize: (String, Any?) -> String) {
         if (nextIndex == -1) return@api fn().let { mapOf("userId" to uid, "length" to it.size, key to it) + add }
 
         // Try to get cache
-        val cacheKey = "$this:$uid:$add"
+        val cacheKey = "$key:$uid:$add"
         val list = pageCache.getOrPut(cacheKey) { fn().let {
             if (it.size > maxCount) millis() to it
             else return@api mapOf("userId" to uid, "length" to it.size, "nextIndex" to -1, key to it) + add
