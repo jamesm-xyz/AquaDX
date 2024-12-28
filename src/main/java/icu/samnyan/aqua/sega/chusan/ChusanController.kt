@@ -70,6 +70,8 @@ class ChusanController(
             data["c3exp"] = true
         }
 
+        if (api.startsWith("CM") && api !in handlers) api = api.removePrefix("CM")
+
         if (api !in noopEndpoint && !handlers.containsKey(api)) {
             log.warn("Chu3 > $api not found")
             return """{"returnCode":"1","apiName":"$api"}"""
