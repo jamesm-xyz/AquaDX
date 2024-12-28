@@ -20,6 +20,8 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.locks.Lock
@@ -107,6 +109,8 @@ inline fun <reified T> resJson(name: Str, warn: Boolean = true) = resStr(name)?.
 } ?: run { if (warn) Ext.log.warn("Resource $name is not found"); null }
 
 // Date and time
+val JST_ZONE = ZoneId.of("Asia/Tokyo")
+fun jstNow() = LocalDateTime.now(JST_ZONE)
 fun millis() = System.currentTimeMillis()
 val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 fun LocalDate.isoDate() = format(DATE_FORMAT)
@@ -224,3 +228,4 @@ val <S> Pair<*, S>.r get() = component2()
 
 // Database
 val Query.exec get() = resultList.map { (it as Array<*>).toList() }
+

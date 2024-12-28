@@ -8,7 +8,6 @@ import icu.samnyan.aqua.sega.chusan.model.response.data.UserEmoney
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserCharge
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserMusicDetail
 import icu.samnyan.aqua.sega.general.model.response.UserRecentRating
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Suppress("UNCHECKED_CAST")
@@ -193,6 +192,7 @@ val chusanInit: ChusanController.() -> Unit = {
         // Get the request url as te address
         val addr = (req.getHeader("wrapper original url") ?: req.requestURL.toString())
             .removeSuffix("GetGameSettingApi")
+        val now = jstNow()
 
         mapOf(
             "gameSetting" to mapOf(
@@ -200,14 +200,14 @@ val chusanInit: ChusanController.() -> Unit = {
                 "dataVersion" to versionHelper[data["clientId"].toString()],
                 "isMaintenance" to false,
                 "requestInterval" to 0,
-                "rebootStartTime" to LocalDateTime.now().minusHours(3).format(fmt),
-                "rebootEndTime" to LocalDateTime.now().minusHours(2).format(fmt),
+                "rebootStartTime" to now.minusHours(4).format(fmt),
+                "rebootEndTime" to now.minusHours(3).format(fmt),
                 "isBackgroundDistribute" to false,
                 "maxCountCharacter" to 300,
                 "maxCountItem" to 300,
                 "maxCountMusic" to 300,
-                "matchStartTime" to LocalDateTime.now().minusHours(5).format(fmt),
-                "matchEndTime" to LocalDateTime.now().plusHours(5).format(fmt),
+                "matchStartTime" to now.minusHours(1).format(fmt),
+                "matchEndTime" to now.plusHours(7).format(fmt),
                 "matchTimeLimit" to 10,
                 "matchErrorLimit" to 10,
                 "matchingUri" to addr,
