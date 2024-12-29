@@ -34,6 +34,9 @@ class AquaGameOptions(
 
     @SettingField("general")
     var chusanTeamName: String = "",
+
+    @SettingField("general")
+    var chusanInfinitePenguins: Boolean = false,
 )
 
 interface AquaGameOptionsRepo : JpaRepository<AquaGameOptions, Long>
