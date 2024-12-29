@@ -1,9 +1,9 @@
 <script>
   import { fade } from "svelte/transition";
-  import { FADE_IN, FADE_OUT } from "../libs/config";
+  import { FADE_IN, FADE_OUT } from "../../libs/config";
   import GameSettingFields from "./GameSettingFields.svelte";
-  import { ts } from "../libs/i18n";
-  import useLocalStorage from "../libs/hooks/useLocalStorage.svelte";
+  import { ts } from "../../libs/i18n";
+  import useLocalStorage from "../../libs/hooks/useLocalStorage.svelte";
 
   const rounding = useLocalStorage("rounding", true);
 </script>
