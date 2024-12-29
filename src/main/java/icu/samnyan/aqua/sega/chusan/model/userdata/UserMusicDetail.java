@@ -3,7 +3,7 @@ package icu.samnyan.aqua.sega.chusan.model.userdata;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import icu.samnyan.aqua.sega.chusan.util.BooleanToIntegerDeserializer;
+import icu.samnyan.aqua.sega.util.jackson.BooleanToIntegerDeserializer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
