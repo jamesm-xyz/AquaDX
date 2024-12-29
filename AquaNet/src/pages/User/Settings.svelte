@@ -9,10 +9,10 @@
   import { pfp } from "../../libs/ui";
   import { t, ts } from "../../libs/i18n";
   import { FADE_IN, FADE_OUT } from "../../libs/config";
-  import UserBox from "../../components/UserBox.svelte";
-  import Mai2Settings from "../../components/Mai2Settings.svelte";
-  import WaccaSettings from "../../components/WaccaSettings.svelte";
-  import GeneralGameSettings from "../../components/GeneralGameSettings.svelte";
+  import UserBox from "../../components/settings/ChuniSettings.svelte";
+  import Mai2Settings from "../../components/settings/Mai2Settings.svelte";
+  import WaccaSettings from "../../components/settings/WaccaSettings.svelte";
+  import GeneralGameSettings from "../../components/settings/GeneralGameSettings.svelte";
 
   USER.ensureLoggedIn()
 

@@ -6,6 +6,7 @@ import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingMemberInfo
 import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingWaitState
 import icu.samnyan.aqua.sega.chusan.model.response.data.UserEmoney
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserCharge
+import icu.samnyan.aqua.sega.chusan.model.userdata.UserItem
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserMusicDetail
 import icu.samnyan.aqua.sega.general.model.response.UserRecentRating
 import java.time.format.DateTimeFormatter
@@ -122,13 +123,26 @@ val chusanInit: ChusanController.() -> Unit = {
         }
     }
 
+    // Check dev/chusan_dev_notes for more item information
+    val penguins = ls(8000, 8010, 8020, 8030)
+
     "GetUserItem".pagedWithKind("userItemList") {
         val rawIndex = data["nextIndex"]!!.long
         val kind = parsing { (rawIndex / 10000000000L).int }
         data["nextIndex"] = rawIndex % 10000000000L
         mapOf("itemKind" to kind) grabs {
             // TODO: All unlock
-            db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind)
+            val items = db.userItem.findAllByUser_Card_ExtIdAndItemKind(uid, kind).toMutableList()
+
+            // Check game options
+            db.userData.findByCard_ExtId(uid)()?.card?.aquaUser?.gameOptions?.let {
+                if (it.chusanInfinitePenguins && kind == 5) {
+                    items.removeAll { it.itemId in penguins }
+                    items.addAll(penguins.map { UserItem(kind, it, 999, true) })
+                }
+            }
+
+            items
         } postProcess {
             val ni = it["nextIndex"]!!.long
             if (ni != -1L) it["nextIndex"] = ni + (kind * 10000000000L)

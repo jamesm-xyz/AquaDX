@@ -4,6 +4,7 @@ import {
   EN_REF_LEADERBOARD,
   EN_REF_SETTINGS,
   EN_REF_USER,
+  EN_REF_USERBOX,
   type EN_REF_Welcome
 } from "./en_ref";
 
@@ -147,8 +148,10 @@ const zhSettings: typeof EN_REF_SETTINGS = {
   'settings.fields.waccaInfiniteWp.desc': '将 WP 设置为 999999',
   'settings.fields.waccaAlwaysVip.name': 'Wacca: 永久会员',
   'settings.fields.waccaAlwaysVip.desc': '将 VIP 到期时间设置为 2077-01-01',
-  'settings.fields.chusanTeamName.name': '中二队名',
+  'settings.fields.chusanTeamName.name': '中二: 队伍名称',
   'settings.fields.chusanTeamName.desc': '自定义显示在个人资料顶部的文本。',
+  'settings.fields.chusanInfinitePenguins.name': '中二: 无限企鹅',
+  'settings.fields.chusanInfinitePenguins.desc': '将角色界限突破的企鹅雕像数量设置为 999。',
   'settings.fields.rounding.name': '分数舍入',
   'settings.fields.rounding.desc': '把分数四舍五入到一位小数',
   'settings.fields.optOutOfLeaderboard.name': '不参与排行榜',
@@ -167,5 +170,26 @@ const zhSettings: typeof EN_REF_SETTINGS = {
   'settings.export': '导出玩家数据',
 }
 
+export const zhUserbox: typeof EN_REF_USERBOX = {
+  'userbox.header.general': '游戏设置',
+  'userbox.header.userbox': 'UserBox 设置',
+  'userbox.header.preview': 'UserBox 预览',
+  'userbox.nameplateId': '名牌',
+  'userbox.frameId': '边框',
+  'userbox.trophyId': '称号',
+  'userbox.mapIconId': '地图图标',
+  'userbox.voiceId': '系统语音',
+  'userbox.avatarWear': '企鹅服饰',
+  'userbox.avatarHead': '企鹅头饰',
+  'userbox.avatarFace': '企鹅面部',
+  'userbox.avatarSkin': '企鹅皮肤',
+  'userbox.avatarItem': '企鹅物品',
+  'userbox.avatarFront': '企鹅前景',
+  'userbox.avatarBack': '企鹅背景',
+  'userbox.preview.notice': '「生存战略」：为了尊重版权，我们不会提供游戏内物品的图片。但是如果你认识其他愿意提供图床的人，在这里输入 URL 就可以显示出预览。',
+  'userbox.preview.url': '图床 URL',
+  'userbox.error.nodata': '未找到中二数据',
+};
+
 export const ZH = { ...zhUser, ...zhWelcome, ...zhGeneral,
-  ...zhLeaderboard, ...zhHome, ...zhSettings }
+  ...zhLeaderboard, ...zhHome, ...zhSettings, ...zhUserbox }

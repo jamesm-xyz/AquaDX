@@ -8,7 +8,7 @@ import type {
   TrendEntry,
   AquaNetUser, GameOption,
   UserBox,
-  UserBoxItemKind
+  UserItem
 } from './generalTypes'
 import type { GameName } from './scoring'
 
@@ -262,13 +262,8 @@ export const USER = {
 }
 
 export const USERBOX = {
-  getProfile: (): Promise<UserBox> =>
+  getProfile: (): Promise<{ user: UserBox, items: UserItem[] }> =>
     get('/api/v2/game/chu3/user-box', {}),
-  getUnlockedItems: (itemId: UserBoxItemKind): Promise<{ itemKind: number, itemId: number, stock: number, isValid: boolean }[]> =>
-    get(`/api/v2/game/chu3/user-box-item-by-kind`,{ itemId }),
-  getItemLabels: () => get(`/api/v2/game/chu3/user-box-all-items`, {}).then(it =>
-    Object.fromEntries(Object.entries(it).map(([key, value]) =>
-      [key, Object.fromEntries((value as any[]).map(it => [it.id, it.name]))]))),
   setUserBox: (d: { field: string, value: number | string }) =>
     post(`/api/v2/game/chu3/user-detail-set`, d),
 }
@@ -305,7 +300,9 @@ export const GAME = {
 
 export const DATA = {
   allMusic: (game: GameName): Promise<AllMusic> =>
-    fetch(`${DATA_HOST}/d/${game}/00/all-music.json`).then(it => it.json())
+    fetch(`${DATA_HOST}/d/${game}/00/all-music.json`).then(it => it.json()),
+  allItems: (game: GameName): Promise<Record<string, Record<string, any>>> =>
+    fetch(`${DATA_HOST}/d/${game}/00/all-items.json`).then(it => it.json()),
 }
 
 export const SETTING = {

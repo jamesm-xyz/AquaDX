@@ -1,10 +1,10 @@
 <script lang="ts">
   import { slide, fade } from "svelte/transition";
-  import { FADE_IN, FADE_OUT } from "../libs/config";
-  import { t } from "../libs/i18n.js";
+  import { FADE_IN, FADE_OUT } from "../../libs/config";
+  import { t } from "../../libs/i18n.js";
   import Icon from "@iconify/svelte";
-  import StatusOverlays from "./StatusOverlays.svelte";
-  import { GAME } from "../libs/sdk";
+  import StatusOverlays from "../StatusOverlays.svelte";
+  import { GAME } from "../../libs/sdk";
 
   const profileFields = [
     ['name', t('settings.mai2.name')],

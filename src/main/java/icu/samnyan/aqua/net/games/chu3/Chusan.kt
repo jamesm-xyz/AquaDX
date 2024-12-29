@@ -30,15 +30,13 @@ class Chusan(
         "trophyId" to { u, v -> u.trophyId = v.int },
         "mapIconId" to { u, v -> u.mapIconId = v.int },
         "voiceId" to { u, v -> u.voiceId = v.int },
-        "avatarItem" to { u, v -> v.split(':', limit=2).map { it.int }.let { (cat, data) -> when (cat) {
-            1 -> u.avatarWear = data
-            2 -> u.avatarHead = data
-            3 -> u.avatarFace = data
-            4 -> u.avatarSkin = data
-            5 -> u.avatarItem = data
-            6 -> u.avatarFront = data
-            7 -> u.avatarBack = data
-        } } }
+        "avatarWear" to { u, v -> u.avatarWear = v.int },
+        "avatarHead" to { u, v -> u.avatarHead = v.int },
+        "avatarFace" to { u, v -> u.avatarFace = v.int },
+        "avatarSkin" to { u, v -> u.avatarSkin = v.int },
+        "avatarItem" to { u, v -> u.avatarItem = v.int },
+        "avatarFront" to { u, v -> u.avatarFront = v.int },
+        "avatarBack" to { u, v -> u.avatarBack = v.int },
     ) }
 
     override suspend fun userSummary(@RP username: Str, @RP token: String?) = us.cardByName(username) { card ->
@@ -60,11 +58,9 @@ class Chusan(
     // UserBox related APIs
     @API("user-box")
     fun userBox(@RP token: String) = us.jwt.auth(token) {
-        userDataRepo.findByCard(it.ghostCard) ?: (404 - "Game data not found") }
-
-    @API("user-box-item-by-kind")
-    fun userBoxItem(@RP token: String, @RP itemId: Int) = us.jwt.auth(token) {
-        rp.userItem.findAllByUser_Card_ExtIdAndItemKind(it.ghostCard.extId, itemId) }
+        val u = userDataRepo.findByCard(it.ghostCard) ?: (404 - "Game data not found")
+        mapOf("user" to u, "items" to rp.userItem.findAllByUser(u))
+    }
 
     @API("user-box-all-items")
     fun userBoxAllItems() = allItems

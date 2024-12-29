@@ -133,33 +133,15 @@ export interface GameOption {
   changed?: boolean
 }
 
+export interface UserItem { itemKind: number, itemId: number, stock: number }
 export interface UserBox {
-  userName:string,
-  level:number,
-  exp:string,
-  point:number,
-  totalPoint:number,
-  playerRating:number,
-  highestRating:number,
-  nameplateId:number,
-  frameId:number,
-  characterId:number,
-  trophyId:number,
-  totalMapNum:number,
-  totalHiScore: number,
-  totalBasicHighScore:number,
-  totalAdvancedHighScore:number,
-  totalExpertHighScore:number,
-  totalMasterHighScore:number,
-  totalUltimaHighScore:number,
-  friendCount:number,
-  firstPlayDate:Date,
-  lastPlayDate:Date,
-  courseClass:number,
-  overPowerPoint:number,
-  overPowerRate:number,
-  mapIconId:number,
-  voiceId:number,
+  userName: string,
+  nameplateId: number,
+  frameId: number,
+  characterId: number,
+  trophyId: number,
+  mapIconId: number,
+  voiceId: number,
   avatarWear: number,
   avatarHead: number,
   avatarFace: number,
@@ -168,16 +150,3 @@ export interface UserBox {
   avatarFront: number,
   avatarBack: number,
 }
-
-// Assign a number to each kind of user box item with an enum
-export enum UserBoxItemKind {
-  nameplate = 1,
-  frame = 2,
-  trophy = 3,
-  mapicon = 8,
-  sysvoice = 9,
-  avatar = 11,
-}
-
-// Define type only with the keys
-export type UserBoxItemKindStr = keyof typeof UserBoxItemKind

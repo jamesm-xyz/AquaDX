@@ -90,6 +90,7 @@ interface Chu3UserGeneralDataRepo : Chu3UserLinked<UserGeneralData> {
 }
 
 interface Chu3UserItemRepo : Chu3UserLinked<UserItem> {
+    fun findAllByUser(user: Chu3UserData): List<UserItem>
     fun findTopByUserAndItemIdAndItemKindOrderByIdDesc(user: Chu3UserData, itemId: Int, itemKind: Int): Optional<UserItem>
     fun findByUserAndItemIdAndItemKind(user: Chu3UserData, itemId: Int, itemKind: Int): UserItem?
 
