@@ -8,4 +8,6 @@ import org.springframework.context.annotation.Configuration
 class ChusanProps {
     var teamName: String? = null
     var loginBonusEnable = false
+    var externalMatching: String? = null
+    var reflectorUrl: String? = null
 }
