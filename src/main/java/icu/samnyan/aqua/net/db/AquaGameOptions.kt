@@ -32,10 +32,10 @@ class AquaGameOptions(
     @SettingField("wacca")
     var waccaAlwaysVip: Boolean = false,
 
-    @SettingField("general")
+    @SettingField("chu3")
     var chusanTeamName: String = "",
 
-    @SettingField("general")
+    @SettingField("chu3")
     var chusanInfinitePenguins: Boolean = false,
 )
 
