@@ -118,14 +118,18 @@ interface Chu3UserPlaylogRepo : GenericPlaylogRepo<UserPlaylog>, Chu3UserLinked<
     fun findByUser_Card_ExtIdAndMusicIdAndLevel(extId: Long, musicId: Int, level: Int): List<UserPlaylog>
 }
 
-interface UserCMissionRepo : Chu3UserLinked<UserCMission> {
+interface Chu3UserCMissionRepo : Chu3UserLinked<UserCMission> {
     fun findByUser_Card_ExtIdAndMissionId(extId: Long, missionId: Int): Optional<UserCMission>
 }
 
-interface UserCMissionProgressRepo : Chu3UserLinked<UserCMissionProgress> {
+interface Chu3UserCMissionProgressRepo : Chu3UserLinked<UserCMissionProgress> {
     fun findByUser_Card_ExtIdAndMissionId(extId: Long, missionId: Int): List<UserCMissionProgress>
 
     fun findByUser_Card_ExtIdAndMissionIdAndOrder(extId: Long, missionId: Int, order: Int): Optional<UserCMissionProgress>
+}
+
+interface Chu3MatchingMemberRepo : JpaRepository<Chu3MatchingMember, Long> {
+    fun existsByUserIdAndUserName(userId: Long, userName: String): Boolean
 }
 
 interface Chu3GameAvatarAccRepo : JpaRepository<AvatarAcc, Long>
@@ -197,8 +201,9 @@ class Chu3Repos(
     val userMap: Chu3UserMapRepo,
     val userMusicDetail: Chu3UserMusicDetailRepo,
     val userPlaylog: Chu3UserPlaylogRepo,
-    val userCMission: UserCMissionRepo,
-    val userCMissionProgress: UserCMissionProgressRepo,
+    val userCMission: Chu3UserCMissionRepo,
+    val userCMissionProgress: Chu3UserCMissionProgressRepo,
+    val matchingMember: Chu3MatchingMemberRepo,
     val gameAvatarAcc: Chu3GameAvatarAccRepo,
     val gameCharacter: Chu3GameCharacterRepo,
     val gameCharge: Chu3GameChargeRepo,
