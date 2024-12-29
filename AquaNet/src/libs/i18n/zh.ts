@@ -4,6 +4,7 @@ import {
   EN_REF_LEADERBOARD,
   EN_REF_SETTINGS,
   EN_REF_USER,
+  EN_REF_USERBOX,
   type EN_REF_Welcome
 } from "./en_ref";
 
@@ -169,5 +170,26 @@ const zhSettings: typeof EN_REF_SETTINGS = {
   'settings.export': '导出玩家数据',
 }
 
+export const zhUserbox: typeof EN_REF_USERBOX = {
+  'userbox.header.general': '游戏设置',
+  'userbox.header.userbox': 'UserBox 设置',
+  'userbox.header.preview': 'UserBox 预览',
+  'userbox.nameplateId': '名牌',
+  'userbox.frameId': '边框',
+  'userbox.trophyId': '称号',
+  'userbox.mapIconId': '地图图标',
+  'userbox.voiceId': '系统语音',
+  'userbox.avatarWear': '企鹅服饰',
+  'userbox.avatarHead': '企鹅头饰',
+  'userbox.avatarFace': '企鹅面部',
+  'userbox.avatarSkin': '企鹅皮肤',
+  'userbox.avatarItem': '企鹅物品',
+  'userbox.avatarFront': '企鹅前景',
+  'userbox.avatarBack': '企鹅背景',
+  'userbox.preview.notice': '「生存战略」：为了尊重版权，我们不会提供游戏内物品的图片。但是如果你认识其他愿意提供图床的人，在这里输入 URL 就可以显示出预览。',
+  'userbox.preview.url': '图床 URL',
+  'userbox.error.nodata': '未找到中二数据',
+};
+
 export const ZH = { ...zhUser, ...zhWelcome, ...zhGeneral,
-  ...zhLeaderboard, ...zhHome, ...zhSettings }
+  ...zhLeaderboard, ...zhHome, ...zhSettings, ...zhUserbox }
