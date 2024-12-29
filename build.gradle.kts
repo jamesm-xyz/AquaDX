@@ -4,7 +4,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 plugins {
-    val ktVer = "2.1.0"
+    val ktVer = "2.0.21"
 
     java
     kotlin("plugin.lombok") version ktVer
@@ -14,7 +14,7 @@ plugins {
     kotlin("plugin.serialization") version ktVer
     kotlin("plugin.allopen") version ktVer
     id("io.freefair.lombok") version "8.6"
-    id("org.springframework.boot") version "3.4.1"
+    id("org.springframework.boot") version "3.2.3"
     id("com.github.ben-manes.versions") version "0.51.0"
     id("org.hibernate.orm") version "6.4.4.Final"
     application
@@ -64,11 +64,11 @@ dependencies {
     // =============================
 
     // Network
-    implementation("io.ktor:ktor-client-core:2.3.13")
-    implementation("io.ktor:ktor-client-cio:2.3.13")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.13")
-    implementation("io.ktor:ktor-client-encoding:2.3.13")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.13")
+    implementation("io.ktor:ktor-client-core:2.3.8")
+    implementation("io.ktor:ktor-client-cio:2.3.8")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.8")
+    implementation("io.ktor:ktor-client-encoding:2.3.8")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // Somehow these are needed for ktor even though they're not in the documentation
