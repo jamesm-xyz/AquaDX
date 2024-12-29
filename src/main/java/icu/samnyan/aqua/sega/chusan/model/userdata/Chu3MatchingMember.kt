@@ -2,8 +2,6 @@ package icu.samnyan.aqua.sega.chusan.model.userdata
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import icu.samnyan.aqua.net.games.BaseEntity
-import icu.samnyan.aqua.sega.chusan.model.response.data.AvatarEquip
-import icu.samnyan.aqua.sega.chusan.model.response.data.GenreGraph
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
 
@@ -41,6 +39,21 @@ class Chu3MatchingMember : BaseEntity() {
     var errCnt = 0
     var hostErrCnt = 0
     var joinTime = 0
+}
+
+class AvatarEquip {
+    var wearID = 0
+    var headID = 0
+    var faceID = 0
+    var skinID = 0
+    var itemID = 0
+    var frontID = 0
+    var backID = 0
+}
+
+class GenreGraph {
+    var genreId = 0
+    var musicCount = 0
 }
 
 class Chu3MatchingMemberReq : Chu3MatchingMember() {
