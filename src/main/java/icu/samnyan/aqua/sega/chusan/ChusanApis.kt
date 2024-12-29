@@ -199,6 +199,14 @@ fun ChusanController.chusanInit() {
             .removeSuffix("GetGameSettingApi").removeSuffix("ChuniServlet/")
         val now = jstNow()
 
+        val matching = if (!props.externalMatching.isNullOrBlank() && !props.proxiedMatching) mapOf(
+            "matchingUri" to props.externalMatching,
+            "matchingUriX" to props.externalMatching,
+        ) else mapOf(
+            "matchingUri" to addr,
+            "matchingUriX" to addr
+        )
+
         mapOf(
             "gameSetting" to mapOf(
                 "romVersion" to "$version.00",
@@ -217,15 +225,9 @@ fun ChusanController.chusanInit() {
                 "matchErrorLimit" to 10,
                 "matchingUri" to addr,
                 "matchingUriX" to addr,
-//                "udpHolePunchUri" to addr,
-//                "reflectorUri" to addr
-
-                // Thanks to rinsama!
-//                "matchingUri" to "http://chu3-match.sega.ink/",
-//                "matchingUriX" to "http://chu3-match.sega.ink/",
-                "udpHolePunchUri" to "http://reflector.naominet.live:18080/",
-                "reflectorUri" to "http://reflector.naominet.live:18080/",
-            ),
+                "udpHolePunchUri" to props.reflectorUrl,
+                "reflectorUri" to props.reflectorUrl,
+            ) + matching,
             "isDumpUpload" to false,
             "isAou" to false
         )
