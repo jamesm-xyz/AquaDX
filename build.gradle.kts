@@ -4,7 +4,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 plugins {
-    val ktVer = "2.0.21"
+    val ktVer = "2.1.0"
 
     java
     kotlin("plugin.lombok") version ktVer
