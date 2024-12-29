@@ -10,4 +10,5 @@ class ChusanProps {
     var loginBonusEnable = false
     var externalMatching: String? = null
     var reflectorUrl: String? = null
+    var proxiedMatching: Boolean = false
 }
