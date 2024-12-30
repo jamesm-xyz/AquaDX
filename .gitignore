@@ -1,6 +1,7 @@
 db/
 web/
 bin/
+mariadb_data/
 
 HELP.md
 target/

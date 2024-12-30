@@ -1,14 +1,14 @@
 
-export const AQUA_HOST = 'https://aquadx.net/aqua'
-export const DATA_HOST = 'https://aquadx.net'
+export const AQUA_HOST = 'http://192.168.1.2'
+export const DATA_HOST = 'http://192.168.1.2:5173/public/gameAssets'
 
 // This will be displayed for users to connect from the client
-export const AQUA_CONNECTION = 'aquadx.hydev.org'
+export const AQUA_CONNECTION = '192.168.1.2'
 
-export const TURNSTILE_SITE_KEY = '0x4AAAAAAASGA2KQEIelo9P9'
-export const DISCORD_INVITE = 'https://discord.gg/FNgveqFF7s'
-export const TELEGRAM_INVITE = 'https://t.me/+zBL4RZdyfvUzZGU1'
-export const QQ_INVITE = 'https://qm.qq.com/q/wvNXbXbHbO'
+export const TURNSTILE_SITE_KEY = ''
+export const DISCORD_INVITE = 'nowhere'
+export const TELEGRAM_INVITE = 'nowhere'
+export const QQ_INVITE = 'nowhere'
 
 // UI
 export const FADE_OUT = { duration: 200 }

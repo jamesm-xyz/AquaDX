@@ -47,12 +47,6 @@
       return submitting = false
     }
 
-    if (turnstile === "") {
-      // Sleep for 100ms to allow Turnstile to finish
-      error = t("welcome.waiting-turnstile")
-      return setTimeout(submit, 100)
-    }
-
     // Signup
     if (isSignup) {
       if (username === "") {
@@ -133,11 +127,6 @@
             {isSignup ? t('welcome.btn-signup') : t('welcome.btn-login')}
           {/if}
         </button>
-        <Turnstile siteKey={TURNSTILE_SITE_KEY} bind:reset={turnstileReset}
-                   on:turnstile-callback={e => console.log(turnstile = e.detail.token)}
-                   on:turnstile-error={_ => console.log(error = t("welcome.turnstile-error"))}
-                   on:turnstile-expired={_ => window.location.reload()}
-                   on:turnstile-timeout={_ => console.log(error = t('welcome.turnstile-timeout'))} />
       </div>
     {:else if state === "verify"}
       <div class="login-form" transition:slide>

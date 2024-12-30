@@ -24,9 +24,17 @@ services:
       MYSQL_USER: cat
       MYSQL_PASSWORD: meow
     ports:
-      - "${AQUADX_DB_PORT:-127.0.0.1:3369}:3306"
+      - "127.0.0.1:3369:3306"
     volumes:
-      - "${AQUADX_DB_DATA:-mariadb_data}:/var/lib/mysql"
-
-volumes:
-  mariadb_data:
+      - "./mariadb_data:/var/lib/mysql"
+  aquanet:
+      container_name: aquadx_aquanet
+      build:
+        context: .
+        dockerfile: aquaNetDockerFile
+      volumes:
+        - ./AquaNet:/AquaNet
+      ports:
+        - "5173:5173"
+      working_dir: "/AquaNet"
+      command: "yarn dev --host"
