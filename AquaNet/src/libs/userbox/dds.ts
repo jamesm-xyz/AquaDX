@@ -225,6 +225,7 @@ export class DDS {
         this.urlCache[path] = url;
         return url
     };
+
     async getFileFromSheet(path: string, x: number, y: number, w: number, h: number, s?: number): Promise<string> {
         if (!await this.loadFile(path))
             return "";
@@ -234,6 +235,7 @@ export class DDS {
         
         return URL.createObjectURL(await this.get2DBlob("image/png") ?? new Blob([]));
     };
+    
     async getFileScaled(path: string, s: number, fallback?: string): Promise<string> {
         if (this.urlCache[path])
             return this.urlCache[path]
