@@ -193,6 +193,11 @@ export class DDS {
         }
     };
 
+    /**
+     * @description Retrieve a file from the IndexedDB database and load it into the DDS loader
+     * @param path File path
+     * @returns Whether or not the attempt to retrieve the file was successful
+     */
     loadFile(path: string) : Promise<boolean> {
         return new Promise(async r => {
             if (!this.db)
@@ -212,6 +217,12 @@ export class DDS {
         })
     };
     
+    /**
+     * @description Retrieve a file from a path
+     * @param path File path
+     * @param fallback Path to a file to fallback to if loading this file fails
+     * @returns An object URL which correlates to a Blob
+     */
     async getFile(path: string, fallback?: string) : Promise<string> {
         if (this.urlCache[path])
             return this.urlCache[path]
@@ -226,6 +237,16 @@ export class DDS {
         return url
     };
 
+    /**
+     * @description Transform a spritesheet located at a path to match the dimensions specified in the parameters
+     * @param path Spritesheet path
+     * @param x Crop: X
+     * @param y Crop: Y
+     * @param w Crop: Width
+     * @param h Crop: Height
+     * @param s Scale factor
+     * @returns An object URL which correlates to a Blob
+     */
     async getFileFromSheet(path: string, x: number, y: number, w: number, h: number, s?: number): Promise<string> {
         if (!await this.loadFile(path))
             return "";
@@ -236,6 +257,13 @@ export class DDS {
         return URL.createObjectURL(await this.get2DBlob("image/png") ?? new Blob([]));
     };
     
+    /**
+     * @description Retrieve a file and scale it by a specified scale factor 
+     * @param path File path
+     * @param s Scale factor
+     * @param fallback Path to a file to fallback to if loading this file fails
+     * @returns An object URL which correlates to a Blob
+     */
     async getFileScaled(path: string, s: number, fallback?: string): Promise<string> {
         if (this.urlCache[path])
             return this.urlCache[path]
