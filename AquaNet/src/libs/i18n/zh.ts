@@ -186,7 +186,6 @@ export const zhUserbox: typeof EN_REF_USERBOX = {
   'userbox.avatarItem': '企鹅物品',
   'userbox.avatarFront': '企鹅前景',
   'userbox.avatarBack': '企鹅背景',
-  'userbox.preview.notice': '「生存战略」：为了尊重版权，我们不会提供游戏内物品的图片。但是如果你认识其他愿意提供图床的人，在这里输入 URL 就可以显示出预览。',
   'userbox.preview.url': '图床 URL',
   'userbox.error.nodata': '未找到中二数据',
 };
