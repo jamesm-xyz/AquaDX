@@ -174,7 +174,7 @@
       {#if userboxSelected == "nameplateId"}
         {#each userItems.find(f => f.ubKey == "nameplateId")?.items ?? [] as item}
           {#await DDSreader?.getFile(`nameplate:${item.itemId.toString().padStart(8, "0")}`) then imageURL}
-            <button on:click={() => {userbox[userboxSelected] = item.itemId; submit(userboxSelected)}}>
+            <button class="nameplate" on:click={() => {userbox[userboxSelected] = item.itemId; submit(userboxSelected)}}>
               <img src={imageURL} alt={allItems.namePlate[item.itemId].name} title={allItems.namePlate[item.itemId].name}>
             </button>
           {/await}
@@ -439,6 +439,11 @@ p.notice
 
     img
       width: 100%
+
+    &.nameplate
+      width: 50%
+      aspect-ratio: unset
+      border: none
 
 .chuni-userbox-container
   display: flex
