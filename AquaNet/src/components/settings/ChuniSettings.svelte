@@ -209,20 +209,37 @@
       {/each}
     </div>
   {/if}
-  {#if USERBOX_INSTALLED}
-    <!-- god this is a mess but idgaf atp -->
-    <div class="field boolean" style:margin-top="1em">
-      <input type="checkbox" bind:checked={USERBOX_ENABLED.value} id="newUserbox">
-      <label for="newUserbox">
-        <span class="name">{t("userbox.new.activate")}</span>
-        <span class="desc">{t(`userbox.new.activate_desc`)}</span>
-      </label>
-    </div>
-  {/if}
-  {#if USERBOX_SUPPORT}
-    <p>
-      <button on:click={() => USERBOX_SETUP_RUN = !USERBOX_SETUP_RUN}>{t(!USERBOX_INSTALLED ? `userbox.new.activate_first` : `userbox.new.activate_update`)}</button>
-    </p>
+  {#if HAS_USERBOX_ASSETS}
+    {#if USERBOX_INSTALLED}
+      <!-- god this is a mess but idgaf atp -->
+      <div class="field boolean" style:margin-top="1em">
+        <input type="checkbox" bind:checked={USERBOX_ENABLED.value} id="newUserbox">
+        <label for="newUserbox">
+          <span class="name">{t("userbox.new.activate")}</span>
+          <span class="desc">{t(`userbox.new.activate_desc`)}</span>
+        </label>
+      </div>
+    {/if}
+    {#if USERBOX_SUPPORT}
+      <p>
+        <button on:click={() => USERBOX_SETUP_RUN = !USERBOX_SETUP_RUN}>{t(!USERBOX_INSTALLED ? `userbox.new.activate_first` : `userbox.new.activate_update`)}</button>
+      </p>
+    {/if} 
+    {#if !USERBOX_SUPPORT || !USERBOX_INSTALLED || !USERBOX_ENABLED.value}
+      <h2>{t("userbox.header.preview")}</h2>
+      <p class="notice">{t("userbox.preview.notice")}</p>
+      <input bind:value={preview} placeholder={t("userbox.preview.url")}/>
+      {#if preview}
+        <div class="preview">
+          {#each userItems.filter(v => v.iKey != 'trophy' && v.iKey != 'systemVoice') as { iKey, ubKey, items }, i}
+            <div>
+              <span>{ts(`userbox.${ubKey}`)}</span>
+              <img src={`${preview}/${iKey}/${userbox[ubKey].toString().padStart(8, '0')}.png`} alt="" on:error={coverNotFound} />
+            </div>
+          {/each}
+        </div>
+      {/if}
+    {/if}
   {/if}
 </div>
 {/if}

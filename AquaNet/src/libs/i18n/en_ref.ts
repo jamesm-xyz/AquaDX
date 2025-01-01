@@ -176,6 +176,7 @@ export const EN_REF_USERBOX = {
   'userbox.avatarItem': 'Avatar Item',
   'userbox.avatarFront': 'Avatar Front',
   'userbox.avatarBack': 'Avatar Back',
+  'userbox.preview.notice': 'To honor the copyright, we cannot host the images of the userbox items. However, if someone else is willing to provide the images, you can enter their URL here and it will be displayed.',
   'userbox.preview.url': 'Image URL',
   'userbox.error.nodata': 'Chuni data not found',
 
