@@ -16,6 +16,14 @@
   import { filter } from "d3";
   import { coverNotFound } from "../../libs/ui";
 
+  import { userboxFileProcess, ddsDB, initializeDb } from "../../libs/userbox/userbox"
+
+  import ChuniPenguinComponent from "./userbox/ChuniPenguin.svelte"
+  import ChuniUserplateComponent from "./userbox/ChuniUserplate.svelte";
+
+  import useLocalStorage from "../../libs/hooks/useLocalStorage.svelte";
+  import { DDS } from "../../libs/userbox/dds";
+
   let user: AquaNetUser
   let [loading, error, submitting, preview] = [true, "", "", ""]
   let changed: string[] = [];
@@ -26,7 +34,7 @@
   let iKinds = { namePlate: 1, frame: 2, trophy: 3, mapIcon: 8, systemVoice: 9, avatarAccessory: 11 }
   // In userbox: 'nameplateId', 'frameId', 'trophyId', 'mapIconId', 'voiceId', 'avatar{Wear/Head/Face/Skin/Item/Front/Back}'
   let userbox: UserBox
-  let avatarKinds = ['Wear', 'Head', 'Face', 'Skin', 'Item', 'Front', 'Back']
+  let avatarKinds = ['Wear', 'Head', 'Face', 'Skin', 'Item', 'Front', 'Back'] as const
   // iKey should match allItems keys, and ubKey should match userbox keys
   let userItems: { iKey: string, ubKey: keyof UserBox, items: UserItem[] }[] = []
 
@@ -83,6 +91,40 @@
     user = u
     return fetchData()
   }).catch((e) => { loading = false; error = e.message });
+  
+  let DDSreader: DDS | undefined;
+
+  let USERBOX_PROGRESS = 0;
+  let USERBOX_SETUP_RUN = false;
+  let USERBOX_SETUP_TEXT = t("userbox.new.setup");
+
+  let USERBOX_ENABLED = useLocalStorage("userboxNew", false);
+  let USERBOX_INSTALLED = false;
+  let USERBOX_SUPPORT = "webkitGetAsEntry" in DataTransferItem.prototype;
+
+  type OnlyNumberPropsOf<T extends Record<string, any>> = {[Prop in keyof T as (T[Prop] extends number ? Prop : never)]: T[Prop]}
+  let userboxSelected: keyof OnlyNumberPropsOf<UserBox> = "avatarWear";
+  const userboxNewOptions = ["systemVoice", "frame", "trophy", "mapIcon"]
+
+  async function userboxSafeDrop(event: Event & { currentTarget: EventTarget & HTMLInputElement; }) {
+    if (!event.target) return null;
+    let input = event.target as HTMLInputElement;
+    let folder = input.webkitEntries[0];
+    error = await userboxFileProcess(folder, (progress: number, progressString: string) => {
+      USERBOX_SETUP_TEXT = progressString;
+      USERBOX_PROGRESS = progress;
+    }) ?? "";
+  }
+
+  indexedDB.databases().then(async (dbi) => {
+    let databaseExists = dbi.some(db => db.name == "userboxChusanDDS");
+    if (databaseExists) {
+      await initializeDb();
+      DDSreader = new DDS(ddsDB);
+      USERBOX_INSTALLED = databaseExists;
+    }
+  })
+
 </script>
 
 <StatusOverlays {error} loading={loading || !!submitting} />
@@ -91,41 +133,139 @@
   <h2>{t("userbox.header.general")}</h2>
   <GameSettingFields game="chu3"/>
   <h2>{t("userbox.header.userbox")}</h2>
-  <div class="fields">
-    {#each userItems as { iKey, ubKey, items }, i}
-      <div class="field">
-        <label for={ubKey}>{ts(`userbox.${ubKey}`)}</label>
-        <div>
-          <select bind:value={userbox[ubKey]} id={ubKey} on:change={() => changed = [...changed, ubKey]}>
-            {#each items as option}
-              <option value={option.itemId}>{allItems[iKey][option.itemId]?.name || `(unknown ${option.itemId})`}</option>
-            {/each}
-          </select>
-          {#if changed.includes(ubKey)}
-            <button transition:slide={{axis: "x"}} on:click={() => submit(ubKey)} disabled={!!submitting}>
-              {t("settings.profile.save")}
-            </button>
-          {/if}
-        </div>
-      </div>
-    {/each}
-  </div>
-  {#if HAS_USERBOX_ASSETS}
-    <h2>{t("userbox.header.preview")}</h2>
-    <p class="notice">{t("userbox.preview.notice")}</p>
-    <input bind:value={preview} placeholder={t("userbox.preview.url")}/>
-    {#if preview}
-      <div class="preview">
-        {#each userItems.filter(v => v.iKey != 'trophy' && v.iKey != 'systemVoice') as { iKey, ubKey, items }, i}
+  {#if !USERBOX_ENABLED.value || !USERBOX_INSTALLED}
+    <div class="fields">
+      {#each userItems as { iKey, ubKey, items }, i}
+        <div class="field">
+          <label for={ubKey}>{ts(`userbox.${ubKey}`)}</label>
           <div>
-            <span>{ts(`userbox.${ubKey}`)}</span>
-            <img src={`${preview}/${iKey}/${userbox[ubKey].toString().padStart(8, '0')}.png`} alt="" on:error={coverNotFound} />
+            <select bind:value={userbox[ubKey]} id={ubKey} on:change={() => changed = [...changed, ubKey]}>
+              {#each items as option}
+                <option value={option.itemId}>{allItems[iKey][option.itemId]?.name || `(unknown ${option.itemId})`}</option>
+              {/each}
+            </select>
+            {#if changed.includes(ubKey)}
+              <button transition:slide={{axis: "x"}} on:click={() => submit(ubKey)} disabled={!!submitting}>
+                {t("settings.profile.save")}
+              </button>
+            {/if}
           </div>
+        </div>
+      {/each}
+    </div>
+  {:else}
+    <div class="chuni-userbox-container">
+      <ChuniUserplateComponent on:click={() => userboxSelected = "nameplateId"} chuniCharacter={userbox.characterId} chuniLevel={userbox.level} chuniRating={userbox.playerRating / 100} 
+        chuniNameplate={userbox.nameplateId} chuniName={userbox.userName} chuniTrophyName={allItems.trophy[userbox.trophyId].name}></ChuniUserplateComponent>
+      <ChuniPenguinComponent classPassthrough="chuni-penguin-float" chuniWear={userbox.avatarWear} chuniHead={userbox.avatarHead} chuniBack={userbox.avatarBack} 
+        chuniFront={userbox.avatarFront} chuniFace={userbox.avatarFace} chuniItem={userbox.avatarItem} 
+        chuniSkin={userbox.avatarSkin}></ChuniPenguinComponent>
+    </div>
+    <div class="chuni-userbox-row">
+      {#each avatarKinds as avatarKind}
+        {#await DDSreader?.getFile(`avatarAccessoryThumbnail:${userbox[`avatar${avatarKind}`].toString().padStart(8, "0")}`) then imageURL}
+          <button on:click={() => userboxSelected = `avatar${avatarKind}`}>
+            <img src={imageURL} class={userboxSelected == `avatar${avatarKind}` ? "focused" : ""} alt={allItems.avatarAccessory[userbox[`avatar${avatarKind}`]].name} title={allItems.avatarAccessory[userbox[`avatar${avatarKind}`]].name}>
+          </button>
+        {/await}
+      {/each}
+    </div>
+    <div class="chuni-userbox">
+      {#if userboxSelected == "nameplateId"}
+        {#each userItems.find(f => f.ubKey == "nameplateId")?.items ?? [] as item}
+          {#await DDSreader?.getFile(`nameplate:${item.itemId.toString().padStart(8, "0")}`) then imageURL}
+            <button class="nameplate" on:click={() => {userbox[userboxSelected] = item.itemId; submit(userboxSelected)}}>
+              <img src={imageURL} alt={allItems.namePlate[item.itemId].name} title={allItems.namePlate[item.itemId].name}>
+            </button>
+          {/await}
         {/each}
+      {:else}
+        {#each userItems.find(f => f.ubKey == userboxSelected)?.items ?? [] as item}
+          {#await DDSreader?.getFile(`avatarAccessoryThumbnail:${item.itemId.toString().padStart(8, "0")}`) then imageURL}
+            <button on:click={() => {userbox[userboxSelected] = item.itemId; submit(userboxSelected)}}>
+              <img src={imageURL} alt={allItems.avatarAccessory[item.itemId].name} title={allItems.avatarAccessory[item.itemId].name}>
+            </button>
+          {/await}
+        {/each}
+      {/if}
+    </div>
+    <div class="fields">
+      {#each userItems.filter(i => userboxNewOptions.includes(i.iKey)) as { iKey, ubKey, items }, i}
+        <div class="field">
+          <label for={ubKey}>{ts(`userbox.${ubKey}`)}</label>
+          <div>
+            <select bind:value={userbox[ubKey]} id={ubKey} on:change={() => changed = [...changed, ubKey]}>
+              {#each items as option}
+                <option value={option.itemId}>{allItems[iKey][option.itemId]?.name || `(unknown ${option.itemId})`}</option>
+              {/each}
+            </select>
+            {#if changed.includes(ubKey)}
+              <button transition:slide={{axis: "x"}} on:click={() => submit(ubKey)} disabled={!!submitting}>
+                {t("settings.profile.save")}
+              </button>
+            {/if}
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if}
+  {#if HAS_USERBOX_ASSETS}
+    {#if USERBOX_INSTALLED}
+      <!-- god this is a mess but idgaf atp -->
+      <div class="field boolean" style:margin-top="1em">
+        <input type="checkbox" bind:checked={USERBOX_ENABLED.value} id="newUserbox">
+        <label for="newUserbox">
+          <span class="name">{t("userbox.new.activate")}</span>
+          <span class="desc">{t(`userbox.new.activate_desc`)}</span>
+        </label>
       </div>
+    {/if}
+    {#if USERBOX_SUPPORT}
+      <p>
+        <button on:click={() => USERBOX_SETUP_RUN = !USERBOX_SETUP_RUN}>{t(!USERBOX_INSTALLED ? `userbox.new.activate_first` : `userbox.new.activate_update`)}</button>
+      </p>
+    {/if} 
+    {#if !USERBOX_SUPPORT || !USERBOX_INSTALLED || !USERBOX_ENABLED.value}
+      <h2>{t("userbox.header.preview")}</h2>
+      <p class="notice">{t("userbox.preview.notice")}</p>
+      <input bind:value={preview} placeholder={t("userbox.preview.url")}/>
+      {#if preview}
+        <div class="preview">
+          {#each userItems.filter(v => v.iKey != 'trophy' && v.iKey != 'systemVoice') as { iKey, ubKey, items }, i}
+            <div>
+              <span>{ts(`userbox.${ubKey}`)}</span>
+              <img src={`${preview}/${iKey}/${userbox[ubKey].toString().padStart(8, '0')}.png`} alt="" on:error={coverNotFound} />
+            </div>
+          {/each}
+        </div>
+      {/if}
     {/if}
   {/if}
 </div>
+{/if}
+ 
+{#if USERBOX_SETUP_RUN && !error}
+  <div class="overlay" transition:fade>
+    <div>
+      <h2>{t('userbox.new.name')}</h2>
+      <span>{USERBOX_SETUP_TEXT}</span>
+      <div class="actions">
+        {#if USERBOX_PROGRESS != 0}
+          <div class="progress">
+            <div class="progress-bar" style="width: {USERBOX_PROGRESS}%"></div>
+          </div>
+        {:else}
+        <button class="drop-btn">
+          <input type="file" on:input={userboxSafeDrop} on:click={e => e.preventDefault()}>
+          {t('userbox.new.drop')}
+        </button>
+        <button on:click={() => USERBOX_SETUP_RUN = false}>
+          {t('back')}
+        </button>
+        {/if}
+      </div>
+    </div>
+  </div>
 {/if}
 
 <style lang="sass">
@@ -134,12 +274,43 @@
 input
   width: 100%
 
+
 h2
   margin-bottom: 0.5rem
 
 p.notice
   opacity: 0.6
   margin-top: 0
+
+.progress 
+  width: 100%
+  height: 10px
+  box-shadow: 0 0 1px 1px vars.$ov-lighter
+  border-radius: 25px
+  margin-bottom: 15px
+  overflow: hidden
+
+  .progress-bar
+    background: #b3c6ff
+    height: 100%
+    border-radius: 25px
+
+
+.drop-btn
+  position: relative
+  width: 100%
+  aspect-ratio: 3
+  background: transparent
+  box-shadow: 0 0 1px 1px vars.$ov-lighter
+  margin-bottom: 1em
+
+  > input
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    opacity: 0
 
 .preview
   margin-top: 32px
@@ -202,4 +373,84 @@ p.notice
 
     > select
       flex: 1
+
+
+.field.boolean
+  display: flex
+  flex-direction: row
+  align-items: center
+  gap: 1rem
+  width: auto
+
+  input
+    width: auto
+    aspect-ratio: 1 / 1
+
+  label
+    display: flex
+    flex-direction: column
+    max-width: max-content
+
+    .desc
+      opacity: 0.6
+
+/* AquaBox */
+
+.chuni-userbox-row
+  width: 100%
+  display: flex
+
+  button
+    padding: 0
+    margin: 0
+    width: 100%
+    flex: 0 1 100%
+    background: none
+    aspect-ratio: 1
+
+    img
+      width: 100%
+      filter: brightness(50%)
+
+      &.focused
+        filter: brightness(75%)
+
+.chuni-userbox 
+  width: calc(100% - 20px)
+  height: 350px
+  
+  display: flex
+  flex-direction: row
+  flex-wrap: wrap
+  padding: 10px
+  background: vars.$c-bg
+  border-radius: 16px
+  overflow-y: auto
+  margin-bottom: 15px
+  justify-content: center
+
+  button
+    padding: 0
+    margin: 0
+    width: 20%
+    align-self: flex-start
+    background: none
+    aspect-ratio: 1
+
+    img
+      width: 100%
+
+    &.nameplate
+      width: 50%
+      aspect-ratio: unset
+      border: none
+
+.chuni-userbox-container
+  display: flex
+  align-items: center
+  justify-content: center
+
+@media (max-width: 1000px)
+  .chuni-userbox-container
+    flex-wrap: wrap
 </style>
