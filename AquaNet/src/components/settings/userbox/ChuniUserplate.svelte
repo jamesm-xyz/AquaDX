@@ -5,7 +5,7 @@
     const DDSreader = new DDS(ddsDB);
 
     export var chuniLevel: number = 1
-    export var chuniName: string = "CHUNITHM"
+    export var chuniName: string = "AquaDX"
     export var chuniRating: number = 1.23
     export var chuniNameplate: number = 1
     export var chuniCharacter: number = 0
