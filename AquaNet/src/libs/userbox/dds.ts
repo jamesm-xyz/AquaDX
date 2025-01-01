@@ -8,6 +8,8 @@ DDS header parsing based off of https://gist.github.com/brett19/13c83c2e5e389337
 
 */
 
+import DDSCache from "./ddsCache";
+
 function makeFourCC(string: string) {
     return string.charCodeAt(0) +
           (string.charCodeAt(1) << 8) +
@@ -56,7 +58,7 @@ void main() {
 
 export class DDS {
     constructor(db: IDBDatabase | undefined) {
-        this.db = db
+        this.cache = new DDSCache(db);
 
         let gl = this.canvasGL.getContext("webgl");
         if (!gl) throw new Error("Failed to get WebGL rendering context") // TODO: make it switch to Classic userbox
@@ -200,20 +202,10 @@ export class DDS {
      */
     loadFile(path: string) : Promise<boolean> {
         return new Promise(async r => {
-            if (!this.db)
-                return r(false);
-            let transaction = this.db.transaction(["dds"], "readonly");
-            let objectStore = transaction.objectStore("dds");
-            let request = objectStore.get(path);
-            request.onsuccess = async (e) => {
-                if (request.result)
-                    if (request.result.blob) {
-                        await this.fromBlob(request.result.blob)
-                        return r(true);
-                    }
-                r(false);
-            }
-            request.onerror = () => r(false);
+            let file = await this.cache?.getFromDatabase(path)
+            if (file != null)
+                await this.fromBlob(file)
+            r(file != null)
         })
     };
     
@@ -224,17 +216,19 @@ export class DDS {
      * @returns An object URL which correlates to a Blob
      */
     async getFile(path: string, fallback?: string) : Promise<string> {
-        if (this.urlCache[path])
-            return this.urlCache[path]
+        if (this.cache?.cached(path))
+            return this.cache.find(path) ?? ""
         if (!await this.loadFile(path))
             if (fallback) {
                 if (!await this.loadFile(fallback))
                     return "";
             } else
-                return "";
-        let url = URL.createObjectURL(await this.getBlob("image/png") ?? new Blob([]));
-        this.urlCache[path] = url;
-        return url
+                return ""
+        let blob = await this.getBlob("image/png");
+        if (!blob) return ""
+        return this.cache?.save(
+            path, URL.createObjectURL(blob)
+        ) ?? "";
     };
 
     /**
@@ -254,6 +248,7 @@ export class DDS {
         this.canvas2D.height = h * (s ?? 1);
         this.ctx.drawImage(this.canvasGL, x, y, w, h, 0, 0, w * (s ?? 1), h * (s ?? 1));
         
+        /* We don't want to cache this, it's a spritesheet piece. */
         return URL.createObjectURL(await this.get2DBlob("image/png") ?? new Blob([]));
     };
     
@@ -265,8 +260,8 @@ export class DDS {
      * @returns An object URL which correlates to a Blob
      */
     async getFileScaled(path: string, s: number, fallback?: string): Promise<string> {
-        if (this.urlCache[path])
-            return this.urlCache[path]
+        if (this.cache?.cached(path, s))
+            return this.cache.find(path, s) ?? ""
         if (!await this.loadFile(path))
             if (fallback) {
                 if (!await this.loadFile(fallback))
@@ -276,9 +271,8 @@ export class DDS {
         this.canvas2D.width = this.canvasGL.width * (s ?? 1);
         this.canvas2D.height = this.canvasGL.height * (s ?? 1);
         this.ctx.drawImage(this.canvasGL, 0, 0, this.canvasGL.width, this.canvasGL.height, 0, 0, this.canvasGL.width * (s ?? 1), this.canvasGL.height * (s ?? 1));
-        let url = URL.createObjectURL(await this.get2DBlob("image/png") ?? new Blob([]));
-        this.urlCache[path] = url;
-        return url;
+
+        return this.cache?.save(path, URL.createObjectURL(await this.get2DBlob("image/png") ?? new Blob([])), s) ?? "";
     };
 
     /**
@@ -332,13 +326,11 @@ export class DDS {
 
     canvas2D: HTMLCanvasElement = document.createElement("canvas");
     canvasGL: HTMLCanvasElement = document.createElement("canvas");
-    urlCache: Record<string, string> = {};
 
+    cache: DDSCache | null;
     ctx: CanvasRenderingContext2D;
 
     gl: WebGLRenderingContext;
     ext: ReturnType<typeof this.gl.getExtension>;
     shader: WebGLShader | null = null;
-
-    db: IDBDatabase | undefined;
 };
