@@ -24,6 +24,7 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
     abstract val playlogRepo: GenericPlaylogRepo<*>
     abstract val shownRanks: List<Pair<Int, String>>
     abstract val settableFields: Map<String, (T, String) -> Unit>
+    open val gettableFields: Set<String> = setOf()
 
     @API("trend")
     abstract suspend fun trend(@RP username: String): List<TrendOut>
@@ -110,7 +111,8 @@ abstract class GameApiController<T : IUserData>(val name: String, userDataClass:
     fun playlog(@RP id: Long): IGenericGamePlaylog = playlogRepo.findById(id).getOrNull() ?: (404 - "Playlog not found")
 
     val userDetailFields by lazy { userDataClass.gettersMap().let { vm ->
-        settableFields.map { (k, _) -> k to (vm[k] ?: error("Field $k not found")) }.toMap()
+        (settableFields.keys.toSet() + gettableFields)
+            .associateWith { k -> (vm[k] ?: error("Field $k not found")) }
     } }
 
     @API("user-detail")
