@@ -38,7 +38,7 @@ class Chusan(
         "avatarFront" to { u, v -> u.avatarFront = v.int },
         "avatarBack" to { u, v -> u.avatarBack = v.int },
     ) }
-    override val gettableFields: Set<String> = setOf("level", "playerRating")
+    override val gettableFields: Set<String> = setOf("level", "playerRating", "characterId")
 
     override suspend fun userSummary(@RP username: Str, @RP token: String?) = us.cardByName(username) { card ->
         // Summary values: total plays, player rating, server-wide ranking
