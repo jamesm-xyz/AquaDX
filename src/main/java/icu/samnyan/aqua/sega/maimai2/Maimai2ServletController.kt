@@ -363,7 +363,7 @@ class Maimai2ServletController(
         return try {
             Metrics.timer("aquadx_maimai2_api_latency", "api" to api).recordCallable {
                 handlers[api]!!.handle(request).let { if (it is String) it else it.toJson() }.also {
-                    if (api !in setOf("GetUserItemApi", "GetGameEventApi"))
+                    if (api !in setOf("GetUserItemApi", "GetGameEventApi", "GetUserPortraitApi"))
                         logger.info("Mai2 > $api : $it")
                 }
             }
