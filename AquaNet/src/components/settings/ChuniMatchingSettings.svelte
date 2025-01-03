@@ -136,7 +136,7 @@ p.notice
   min-width: 150px
 
   &.selected
-    border: 1px solid vars.$c-good
+    border: 1px solid vars.$c-main
 
   .divider
     width: 100%
