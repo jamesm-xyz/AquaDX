@@ -6,6 +6,8 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import jakarta.persistence.Query
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.tika.Tika
@@ -43,6 +45,19 @@ typealias JavaSerializable = java.io.Serializable
 
 typealias JDict = Map<String, Any?>
 typealias MutJDict = MutableMap<String, Any?>
+
+fun HttpServletRequest.details() = mapOf(
+    "method" to method,
+    "uri" to requestURI,
+    "query" to queryString,
+    "remote" to remoteAddr,
+    "headers" to headerNames.asSequence().associateWith { getHeader(it) }
+)
+
+fun HttpServletResponse.details() = mapOf(
+    "status" to status,
+    "headers" to headerNames.asSequence().associateWith { getHeader(it) },
+)
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.PROPERTY_GETTER)
 @Retention(AnnotationRetention.RUNTIME)
