@@ -2,14 +2,25 @@
 
 package icu.samnyan.aqua.sega.chusan
 
-import ext.*
+import ext.JDict
+import ext.int
+import ext.millis
+import ext.parsing
 import icu.samnyan.aqua.sega.chusan.model.response.data.MatchingWaitState
 import icu.samnyan.aqua.sega.chusan.model.userdata.Chu3MatchingMemberReq
+import kotlin.collections.MutableList
+import kotlin.collections.find
+import kotlin.collections.indices
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mapOf
+import kotlin.collections.mutableListOf
+import kotlin.collections.mutableMapOf
+import kotlin.collections.set
 
 
 fun ChusanController.matchingApiInit() {
     if (props.externalMatching.isNullOrBlank()) serverOnlyMatching()
-    else if (props.proxiedMatching) proxyMatching()
 }
 
 /**
@@ -55,50 +66,4 @@ fun ChusanController.serverOnlyMatching() {
             "reflectorUri" to props.reflectorUrl
         )
     }
-}
-
-/**
- * Matching implementation
- */
-fun ChusanController.proxyMatching() {
-    val ext = props.externalMatching!!
-
-    // ID Cache <obfuscated: original> is used to obfuscate the user ID
-    val processedCache = mutableSetOf<Long>()
-    val idCache = mutableMapOf<Long, Long>()
-
-    fun Chu3MatchingMemberReq.checkFromAquaDX(): Boolean {
-        if (userId in idCache) return true
-        if (userId in processedCache) return false
-
-        // Check if this user is from our server
-        val user = db.userData.findByCard_ExtId(userId)()
-        if (user == null) {
-            // User is from another server, check if they have been checked in
-            if (db.matchingMember.existsByUserIdAndUserName(userId, userName)) {
-                // Check in
-                db.matchingMember.save(this)
-                log.info("[Matching] User $userId ($userName) not found, checking in.")
-            }
-            processedCache.add(userId)
-        }
-        else {
-            // Is from our server, obfuscate the user ID to enhance security
-            val randomId = (0..Int.MAX_VALUE).random().toLong()
-            idCache[randomId] = userId
-            userId = randomId
-            log.info("[Matching] User $userId ($userName) is from our server, obfuscated to $randomId.")
-        }
-        return user != null
-    }
-
-    "BeginMatching" {
-        val member = parsing { mapper.convert<Chu3MatchingMemberReq>(data["matchingMemberInfo"] as JDict) }
-        member.checkFromAquaDX()
-
-        // Forward BeginMatching to external server
-//        val res =
-    }
-
-    TODO("The external matching API is not implemented yet.")
 }
