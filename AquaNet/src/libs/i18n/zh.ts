@@ -148,10 +148,14 @@ const zhSettings: typeof EN_REF_SETTINGS = {
   'settings.fields.waccaInfiniteWp.desc': '将 WP 设置为 999999',
   'settings.fields.waccaAlwaysVip.name': 'Wacca: 永久会员',
   'settings.fields.waccaAlwaysVip.desc': '将 VIP 到期时间设置为 2077-01-01',
-  'settings.fields.chusanTeamName.name': '中二: 队伍名称',
+  'settings.fields.chusanTeamName.name': '队伍名称',
   'settings.fields.chusanTeamName.desc': '自定义显示在个人资料顶部的文本。',
-  'settings.fields.chusanInfinitePenguins.name': '中二: 无限企鹅',
+  'settings.fields.chusanInfinitePenguins.name': '我是桐谷遥',
   'settings.fields.chusanInfinitePenguins.desc': '将角色界限突破的企鹅雕像数量设置为 999。',
+  'settings.fields.chusanMatchingReflector.name': '全国对战 Reflector',
+  'settings.fields.chusanMatchingReflector.desc': '全国对战服务器的 UDP 反射服务器的 URL',
+  'settings.fields.chusanMatchingServer.name': '全国对战服务器',
+  'settings.fields.chusanMatchingServer.desc': '全国对战服务器的 URL',
   'settings.fields.rounding.name': '分数舍入',
   'settings.fields.rounding.desc': '把分数四舍五入到一位小数',
   'settings.fields.optOutOfLeaderboard.name': '不参与排行榜',
@@ -168,10 +172,12 @@ const zhSettings: typeof EN_REF_SETTINGS = {
   'settings.profile.unset': '未设置',
   'settings.profile.unchanged': '未更改',
   'settings.export': '导出玩家数据',
+  'settings.cabNotice': '注意：下面这些设置只会影响你自己的机器，如果你是在其他人的机器上玩的话，请联系机主来改设置'
 }
 
 export const zhUserbox: typeof EN_REF_USERBOX = {
   'userbox.header.general': '游戏设置',
+  'userbox.header.matching': '全国对战',
   'userbox.header.userbox': 'UserBox 设置',
   'userbox.header.preview': 'UserBox 预览',
   'userbox.nameplateId': '名牌',
@@ -189,7 +195,7 @@ export const zhUserbox: typeof EN_REF_USERBOX = {
   'userbox.preview.notice': '「生存战略」：为了尊重版权，我们不会提供游戏内物品的图片。但是如果你认识其他愿意提供图床的人，在这里输入 URL 就可以显示出预览。',
   'userbox.preview.url': '图床 URL',
   'userbox.error.nodata': '未找到中二数据',
-  
+
   'userbox.new.name': 'AquaBox',
   'userbox.new.setup': '将 Chuni（Lumi 或更高版本）的游戏文件夹拖放到下方区域，以显示带有名牌和头像的 UserBox。所有文件都在浏览器中处理。',
   'userbox.new.setup.processing_file': '正在处理文件',

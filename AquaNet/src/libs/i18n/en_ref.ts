@@ -138,10 +138,14 @@ export const EN_REF_SETTINGS = {
   'settings.fields.waccaInfiniteWp.desc': 'Set WP to 999999',
   'settings.fields.waccaAlwaysVip.name': 'Wacca: Always VIP',
   'settings.fields.waccaAlwaysVip.desc': 'Set VIP expiration date to 2077-01-01',
-  'settings.fields.chusanTeamName.name': 'Chuni: Team Name',
+  'settings.fields.chusanTeamName.name': 'Team Name',
   'settings.fields.chusanTeamName.desc': 'Customize the text displayed on the top of your profile.',
-  'settings.fields.chusanInfinitePenguins.name': 'Chuni: Infinite Penguins',
+  'settings.fields.chusanInfinitePenguins.name': 'Infinite Penguins',
   'settings.fields.chusanInfinitePenguins.desc': 'Set penguin statues for character level prompting to 999.',
+  'settings.fields.chusanMatchingReflector.name': 'Matching Server Reflector',
+  'settings.fields.chusanMatchingReflector.desc': 'URL of the national matching server\'s UDP reflector.',
+  'settings.fields.chusanMatchingServer.name': 'Matching Server',
+  'settings.fields.chusanMatchingServer.desc': 'URL of the national matching server.',
   'settings.fields.rounding.name': 'Score Rounding',
   'settings.fields.rounding.desc': 'Round the score to one decimal place',
   'settings.fields.optOutOfLeaderboard.name': 'Opt Out of Leaderboard',
@@ -158,10 +162,12 @@ export const EN_REF_SETTINGS = {
   'settings.profile.unset': 'Unset',
   'settings.profile.unchanged': 'Unchanged',
   'settings.export': 'Export Player Data',
+  'settings.cabNotice': "Note: These settings will only affect your own cab/setup. If you're playing on someone else's setup, please contact them to change these settings."
 }
 
 export const EN_REF_USERBOX = {
   'userbox.header.general': 'General Settings',
+  'userbox.header.matching': 'National Matching',
   'userbox.header.userbox': 'UserBox Settings',
   'userbox.header.preview': 'UserBox Preview',
   'userbox.nameplateId': 'Nameplate',
@@ -179,6 +185,10 @@ export const EN_REF_USERBOX = {
   'userbox.preview.notice': 'To honor the copyright, we cannot host the images of the userbox items. However, if someone else is willing to provide the images, you can enter their URL here and it will be displayed.',
   'userbox.preview.url': 'Image URL',
   'userbox.error.nodata': 'Chuni data not found',
+
+  'userbox.matching.select': 'Select Matching Server',
+  'userbox.matching.option.ui': 'Rooms',
+  'userbox.matching.option.guide': 'Guide',
 
   'userbox.new.name': 'AquaBox',
   'userbox.new.setup': 'Drag and drop your Chuni game folder (Lumi or newer) into the box below to display UserBoxes with their nameplate & avatar. All files are handled in-browser.',
