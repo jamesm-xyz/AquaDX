@@ -149,4 +149,7 @@ export interface UserBox {
   avatarItem: number,
   avatarFront: number,
   avatarBack: number,
+
+  level: number
+  playerRating: number
 }

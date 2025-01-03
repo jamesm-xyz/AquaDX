@@ -189,6 +189,17 @@ export const zhUserbox: typeof EN_REF_USERBOX = {
   'userbox.preview.notice': '「生存战略」：为了尊重版权，我们不会提供游戏内物品的图片。但是如果你认识其他愿意提供图床的人，在这里输入 URL 就可以显示出预览。',
   'userbox.preview.url': '图床 URL',
   'userbox.error.nodata': '未找到中二数据',
+  
+  'userbox.new.name': 'AquaBox',
+  'userbox.new.setup': '将 Chuni（Lumi 或更高版本）的游戏文件夹拖放到下方区域，以显示带有名牌和头像的 UserBox。所有文件都在浏览器中处理。',
+  'userbox.new.setup.processing_file': '正在处理文件',
+  'userbox.new.setup.finalizing': '正在保存到内部存储',
+  'userbox.new.drop': '将游戏文件夹拖到此处',
+  'userbox.new.activate_first': '启用 AquaBox（需要游戏文件）',
+  'userbox.new.activate_update': '更新 AquaBox（需要游戏文件）',
+  'userbox.new.activate': '使用 AquaBox',
+  'userbox.new.activate_desc': '启用后可显示带有名牌和头像的 UserBox',
+  'userbox.new.error.invalidFolder': '所选文件夹无效。请确认游戏版本为 Lumi 或更新，并且包含 “A001” 选项包。'
 };
 
 export const ZH = { ...zhUser, ...zhWelcome, ...zhGeneral,
