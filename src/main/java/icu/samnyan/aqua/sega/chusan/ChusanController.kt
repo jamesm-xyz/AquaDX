@@ -72,6 +72,8 @@ class ChusanController(
         }
 
         if (api.startsWith("CM") && api !in handlers) api = api.removePrefix("CM")
+        val token = TokenChecker.getCurrentSession()?.token?.substring(0, 6) ?: "NO-TOKEN"
+        log.info("Chu3 < $api : ${data.toJson()} : [$token]")
 
         if (api !in noopEndpoint && !handlers.containsKey(api)) {
             log.warn("Chu3 > $api not found")
@@ -84,8 +86,6 @@ class ChusanController(
             log.info("Chu3 > $api no-op")
             return """{"returnCode":"1"}"""
         }
-        val token = TokenChecker.getCurrentSession()?.token?.substring(0, 6) ?: "NO-TOKEN"
-        log.info("Chu3 < $api : ${data.toJson()} : [$token]")
 
         return try {
             Metrics.timer("aquadx_chusan_api_latency", "api" to api).recordCallable {
