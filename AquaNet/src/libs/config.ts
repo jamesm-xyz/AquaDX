@@ -37,6 +37,6 @@ export const CHU3_MATCHINGS: ChusanMatchingOption[] = [
     guide: "https://github.com/MewoLab/AquaDX/blob/v1-dev/docs/chu3-national-matching.md",
     matching: "http://yukiotoko.chara.lol:9004/",
     reflector: "http://yukiotoko.chara.lol:50201/",
-    coop: ["Missless"]
+    coop: ["Missless", "CozyNet", "GMG"]
   }
 ]
