@@ -196,6 +196,14 @@ export const zhUserbox: typeof EN_REF_USERBOX = {
   'userbox.preview.url': '图床 URL',
   'userbox.error.nodata': '未找到中二数据',
 
+  'userbox.matching.select': '选择对战服务器',
+  'userbox.matching.select.sub': '选择你想加入的跨服全国对战服务器',
+  'userbox.matching.option.ui': '房间列表',
+  'userbox.matching.option.guide': '教程',
+  'userbox.matching.option.collab': '合作伙伴',
+  'userbox.matching.custom.name': '自定义',
+  'userbox.matching.custom.sub': '输入其他的匹配 URL',
+
   'userbox.new.name': 'AquaBox',
   'userbox.new.setup': '将 Chuni（Lumi 或更高版本）的游戏文件夹拖放到下方区域，以显示带有名牌和头像的 UserBox。所有文件都在浏览器中处理。',
   'userbox.new.setup.processing_file': '正在处理文件',

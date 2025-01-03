@@ -60,7 +60,7 @@ import { t } from "../../libs/i18n.js";
   <div>
     <div>
       <h2>{t('userbox.header.matching')}</h2>
-      <p>Choose the matching server you want to use.</p>
+      <p>{t('userbox.matching.select.sub')}</p>
     </div>
     <div class="options">
       <!-- Selectable options -->
@@ -78,7 +78,7 @@ import { t } from "../../libs/i18n.js";
         <div class="divider"></div>
 
         <div class="coop">
-          <span>Collaborators</span>
+          <span>{t('userbox.matching.option.collab')}</span>
           <div>
             {#each option.coop as coop}
               <span>{coop}</span>
@@ -93,8 +93,8 @@ import { t } from "../../libs/i18n.js";
         role="button" tabindex="0" on:keypress={e => e.key === 'Enter' && clickCustom()}
         class:selected={custom}>
 
-        <span class="name">Custom</span>
-        <p class="notice custom">Enter your own URL</p>
+        <span class="name">{t('userbox.matching.custom.name')}</span>
+        <p class="notice custom">{t('userbox.matching.custom.sub')}</p>
       </div>
     </div>
   </div>

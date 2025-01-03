@@ -187,8 +187,12 @@ export const EN_REF_USERBOX = {
   'userbox.error.nodata': 'Chuni data not found',
 
   'userbox.matching.select': 'Select Matching Server',
+  'userbox.matching.select.sub': 'Choose the matching server you want to use.',
   'userbox.matching.option.ui': 'Rooms',
   'userbox.matching.option.guide': 'Guide',
+  'userbox.matching.option.collab': 'Collaborators',
+  'userbox.matching.custom.name': 'Custom',
+  'userbox.matching.custom.sub': 'Enter your own URL',
 
   'userbox.new.name': 'AquaBox',
   'userbox.new.setup': 'Drag and drop your Chuni game folder (Lumi or newer) into the box below to display UserBoxes with their nameplate & avatar. All files are handled in-browser.',
