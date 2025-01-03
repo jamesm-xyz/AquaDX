@@ -12,14 +12,17 @@ This is tested on Chusan 2.27.
 
 ## Setting Up
 
-1. Make sure you use [Dniel97's open-source segatools](https://gitea.tendokyu.moe/Dniel97/SEGAguide/wiki/SDHD)  
+![](chu3-matching.png)
+
+1. Go to the AquaNet website and set your matching server to "Yukiotoko"
+2. Make sure you use [Dniel97's open-source segatools](https://gitea.tendokyu.moe/Dniel97/SEGAguide/wiki/SDHD)  
    If you're using fufubot segatools, please override it with Dniel97's version (don't forget to update `segatools.ini`).
-2. Patch your `chusanApp.exe` using [Two-Torial's open-source patcher](https://patcher.two-torial.xyz/)  
+3. Patch your `chusanApp.exe` using [Two-Torial's open-source patcher](https://patcher.two-torial.xyz/)  
    (Make sure you disable "Set all timer to 999", enable "No encryption", "No TLS", "Patch for head-to-head play")
-3. Make sure you only have official options.  
+4. Make sure you only have official options.  
    (Remove things like A999, AOMN, etc.)
-4. Pet your cat 🐈
-5. Launch!
+5. Pet your cat 🐈
+6. Launch!
 
 ## How to Play
 
