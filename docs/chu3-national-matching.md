@@ -4,6 +4,8 @@ The national matching game mode allows up to 4 players on any server (YES, ANY S
 In this game mode, for example, you can play with RinNET or Missless players as well.
 This is a guide on how to set up your client for national matching.
 
+This is tested on Chusan 2.27.
+
 ## Pre-requisites
 
 - Play the normal game at least once so that you have a profile on the server.
