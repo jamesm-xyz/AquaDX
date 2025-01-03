@@ -12,7 +12,7 @@ This is tested on Chusan 2.27.
 
 ## Setting Up
 
-1. Make sure you use [Dniel97's open-source segatools](https://gitea.tendokyu.moe/Dniel97/SEGAguide/wiki/SDHD)
+1. Make sure you use [Dniel97's open-source segatools](https://gitea.tendokyu.moe/Dniel97/SEGAguide/wiki/SDHD)  
    If you're using fufubot segatools, please override it with Dniel97's version (don't forget to update `segatools.ini`).
 2. Patch your `chusanApp.exe` using [Two-Torial's open-source patcher](https://patcher.two-torial.xyz/)  
    (Make sure you disable "Set all timer to 999", enable "No encryption", "No TLS", "Patch for head-to-head play")
