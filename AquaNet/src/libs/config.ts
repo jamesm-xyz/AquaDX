@@ -1,3 +1,4 @@
+import type { ChusanMatchingOption } from "./generalTypes"
 
 export const AQUA_HOST = 'https://aquadx.net/aqua'
 export const DATA_HOST = 'https://aquadx.net'
@@ -21,7 +22,7 @@ export const HAS_USERBOX_ASSETS = true
 // Meow meow meow
 
 // Matching servers
-export const CHU3_MATCHINGS = [
+export const CHU3_MATCHINGS: ChusanMatchingOption[] = [
   {
     name: "林国对战",
     ui: "https://chu3-match.sega.ink/rooms",
