@@ -3,6 +3,7 @@ package icu.samnyan.aqua.sega.general.filter
 import ext.details
 import ext.logger
 import ext.toJson
+import icu.samnyan.aqua.sega.allnet.TokenChecker
 import icu.samnyan.aqua.sega.util.ZLib
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -47,7 +48,8 @@ class CompressionFilter : OncePerRequestFilter() {
                     "req" to req.details(),
                     "resp" to respW.details(),
                     "body" to reqSrc.toString(Charsets.UTF_8),
-                    "result" to respW.contentAsByteArray.toString(Charsets.UTF_8)
+                    "result" to respW.contentAsByteArray.toString(Charsets.UTF_8),
+                    "token" to TokenChecker.getCurrentSession()?.token
                 ).toJson()
 
                 log.error("HTTP ${respW.status}: $details")
