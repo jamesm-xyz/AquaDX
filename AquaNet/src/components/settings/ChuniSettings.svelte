@@ -23,6 +23,7 @@
 
   import useLocalStorage from "../../libs/hooks/useLocalStorage.svelte";
   import { DDS } from "../../libs/userbox/dds";
+  import ChuniMatchingSettings from "./ChuniMatchingSettings.svelte";
 
   let user: AquaNetUser
   let [loading, error, submitting, preview] = [true, "", "", ""]
@@ -91,7 +92,7 @@
     user = u
     return fetchData()
   }).catch((e) => { loading = false; error = e.message });
-  
+
   let DDSreader: DDS | undefined;
 
   let USERBOX_PROGRESS = 0;
@@ -155,10 +156,10 @@
     </div>
   {:else}
     <div class="chuni-userbox-container">
-      <ChuniUserplateComponent on:click={() => userboxSelected = "nameplateId"} chuniCharacter={userbox.characterId} chuniLevel={userbox.level} chuniRating={userbox.playerRating / 100} 
+      <ChuniUserplateComponent on:click={() => userboxSelected = "nameplateId"} chuniCharacter={userbox.characterId} chuniLevel={userbox.level} chuniRating={userbox.playerRating / 100}
         chuniNameplate={userbox.nameplateId} chuniName={userbox.userName} chuniTrophyName={allItems.trophy[userbox.trophyId].name}></ChuniUserplateComponent>
-      <ChuniPenguinComponent classPassthrough="chuni-penguin-float" chuniWear={userbox.avatarWear} chuniHead={userbox.avatarHead} chuniBack={userbox.avatarBack} 
-        chuniFront={userbox.avatarFront} chuniFace={userbox.avatarFace} chuniItem={userbox.avatarItem} 
+      <ChuniPenguinComponent classPassthrough="chuni-penguin-float" chuniWear={userbox.avatarWear} chuniHead={userbox.avatarHead} chuniBack={userbox.avatarBack}
+        chuniFront={userbox.avatarFront} chuniFace={userbox.avatarFace} chuniItem={userbox.avatarItem}
         chuniSkin={userbox.avatarSkin}></ChuniPenguinComponent>
     </div>
     <div class="chuni-userbox-row">
@@ -224,7 +225,7 @@
       <p>
         <button on:click={() => USERBOX_SETUP_RUN = !USERBOX_SETUP_RUN}>{t(!USERBOX_INSTALLED ? `userbox.new.activate_first` : `userbox.new.activate_update`)}</button>
       </p>
-    {/if} 
+    {/if}
     {#if !USERBOX_SUPPORT || !USERBOX_INSTALLED || !USERBOX_ENABLED.value}
       <h2>{t("userbox.header.preview")}</h2>
       <p class="notice">{t("userbox.preview.notice")}</p>
@@ -241,9 +242,11 @@
       {/if}
     {/if}
   {/if}
+
+  <ChuniMatchingSettings/>
 </div>
 {/if}
- 
+
 {#if USERBOX_SETUP_RUN && !error}
   <div class="overlay" transition:fade>
     <div>
@@ -282,7 +285,7 @@ p.notice
   opacity: 0.6
   margin-top: 0
 
-.progress 
+.progress
   width: 100%
   height: 10px
   box-shadow: 0 0 1px 1px vars.$ov-lighter
@@ -415,10 +418,10 @@ p.notice
       &.focused
         filter: brightness(75%)
 
-.chuni-userbox 
+.chuni-userbox
   width: calc(100% - 20px)
   height: 350px
-  
+
   display: flex
   flex-direction: row
   flex-wrap: wrap

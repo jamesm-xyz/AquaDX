@@ -1,6 +1,7 @@
 package icu.samnyan.aqua.sega.chusan
 
 import ext.*
+import icu.samnyan.aqua.sega.allnet.TokenChecker
 import icu.samnyan.aqua.sega.chusan.model.request.UserCMissionResp
 import icu.samnyan.aqua.sega.chusan.model.response.data.UserEmoney
 import icu.samnyan.aqua.sega.chusan.model.userdata.UserCharge
@@ -193,19 +194,16 @@ fun ChusanController.chusanInit() {
         // Special thanks to skogaby
         // Hardcode so that the reboot time always started 3 hours ago and ended 2 hours ago
         val fmt = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
-
-        // Get the request url as te address
-        val addr = (req.getHeader("wrapper original url") ?: req.requestURL.toString())
-            .removeSuffix("GetGameSettingApi").removeSuffix("ChuniServlet/")
         val now = jstNow()
 
-        val matching = if (!props.externalMatching.isNullOrBlank() && !props.proxiedMatching) mapOf(
-            "matchingUri" to props.externalMatching,
-            "matchingUriX" to props.externalMatching,
-        ) else mapOf(
-            "matchingUri" to addr,
-            "matchingUriX" to addr
-        )
+        // Set the matching & reflector to the one set in the game options, or the external matching server
+        val opts = TokenChecker.getCurrentSession()?.user?.gameOptions
+        val matching = opts?.chusanMatchingServer?.ifBlank { null } ?:
+            props.externalMatching?.ifBlank { null } ?:
+            (req.getHeader("wrapper original url") ?: req.requestURL.toString())
+                .removeSuffix("GetGameSettingApi").removeSuffix("ChuniServlet/")
+        val reflector = opts?.chusanMatchingReflector?.ifBlank { null } ?:
+            props.reflectorUrl
 
         mapOf(
             "gameSetting" to mapOf(
@@ -223,11 +221,11 @@ fun ChusanController.chusanInit() {
                 "matchEndTime" to now.plusHours(7).format(fmt),
                 "matchTimeLimit" to 10,
                 "matchErrorLimit" to 10,
-                "matchingUri" to addr,
-                "matchingUriX" to addr,
-                "udpHolePunchUri" to props.reflectorUrl,
-                "reflectorUri" to props.reflectorUrl,
-            ) + matching,
+                "matchingUri" to matching.ensureEndingSlash(),
+                "matchingUriX" to matching.ensureEndingSlash(),
+                "udpHolePunchUri" to reflector?.ensureEndingSlash(),
+                "reflectorUri" to reflector?.ensureEndingSlash(),
+            ),
             "isDumpUpload" to false,
             "isAou" to false
         )
